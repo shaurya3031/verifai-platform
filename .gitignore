@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment secrets — NEVER commit these
+.env
+serviceAccountKey.json
+
+# Local database
+verifai.db
+
+# Windows scripts (not needed on cloud)
+*.bat
+*.ps1
+
+# Debug/test files
+check_db.js
+debug_socket.js
+test_*.js
+run-diagnostic.bat
+repair-verifai.bat
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verif-AI — AI-powered news verification platform using multiple AI models to fact-check claims in real-time.">
+    <meta name="keywords" content="news verification, fact check, AI, NVIDIA, fake news detector">
+    <title>Verif-AI — AI News Verification</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Shader Background -->
+    <div id="shader-container"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="url(#navGrad)" opacity="0.9"/>
+                    <path d="M28 38l-8-8 3-3 5 5 13-13 3 3L28 38z" fill="white"/>
+                    <defs>
+                        <linearGradient id="navGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00d4ff"/>
+                            <stop offset="1" stop-color="#7c3aed"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <span class="brand-name">Verif-<span class="brand-accent">AI</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link active">Dashboard</a>
+            <a href="updates.html" class="nav-link">Live Updates</a>
+            <div id="serverStatus" class="status-indicator offline">Checking...</div>
+            <div id="userProfile" class="user-profile-nav" style="display: none;">
+                <span id="userEmailDisplay" class="user-email-chip"></span>
+                <button id="logoutBtn" class="logout-link" onclick="window.handleLogout()">Logout</button>
+            </div>
+        </div>
+        <div class="nav-status">
+            <div class="status-dot"></div>
+            <span>3 AI Models Online</span>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content reveal">
+            <div class="hero-badge stagger-1">
+                <span class="badge-pulse"></span>
+                AI-Powered Verification
+            </div>
+            <h1 class="hero-title stagger-2" id="heroTitle">
+                <span class="text-reveal"><span>Don't</span></span> <span class="text-reveal"><span>Trust.</span></span><br>
+                <span class="gradient-text text-reveal"><span>Verify.</span></span>
+            </h1>
+            <p class="hero-subtitle stagger-3">
+                Paste any news headline or claim — our ensemble of <strong>3 AI models</strong> and <strong>web search</strong> will analyze it for accuracy, bias, and credibility in seconds.
+            </p>
+            <div class="hero-actions stagger-4">
+                <a href="#verify" class="hero-cta magnetic" id="heroCta">
+                    <span>Start Verifying</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="orbit-ring ring-1">
+                <div class="orbit-dot" style="--delay: 0s;"><span>Llama 3.1</span></div>
+            </div>
+            <div class="orbit-ring ring-2">
+                <div class="orbit-dot" style="--delay: -2s;"><span>Mistral</span></div>
+            </div>
+            <div class="orbit-ring ring-3">
+                <div class="orbit-dot" style="--delay: -4s;"><span>Nemotron</span></div>
+            </div>
+            <div class="orbit-center">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="center-shield">
+                    <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="url(#heroGrad)" opacity="0.9"/>
+                    <path d="M28 38l-8-8 3-3 5 5 13-13 3 3L28 38z" fill="white"/>
+                    <defs>
+                        <linearGradient id="heroGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00d4ff"/>
+                            <stop offset="1" stop-color="#7c3aed"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-section" id="how-it-works">
+        <h2 class="section-title reveal">How It <span class="gradient-text">Works</span></h2>
+        <div class="bento-grid reveal">
+            <div class="step-card bento-item wide glass stagger-1" data-step="1">
+                <div class="step-number">01</div>
+                <div class="step-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </div>
+                <h3>Paste Your Claim</h3>
+                <p>Enter any news headline, social media post, or claim you want to verify.</p>
+            </div>
+            <div class="step-card bento-item glass stagger-2" data-step="2">
+                <div class="step-number">02</div>
+                <div class="step-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <h3>AI Multi-Analysis</h3>
+                <p>Three NVIDIA AI models analyze for fact accuracy.</p>
+            </div>
+            <div class="step-card bento-item glass stagger-3" data-step="3">
+                <div class="step-number">03</div>
+                <div class="step-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <h3>Web Corroboration</h3>
+                <p>Google Search finds supporting sources.</p>
+            </div>
+            <div class="step-card bento-item wide glass stagger-4" data-step="4">
+                <div class="step-number">04</div>
+                <div class="step-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <h3>Trust Verdict</h3>
+                <p>Get a clear trust score, detailed breakdown, and actionable insights.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- History Section (Now Private) -->
+    <section class="history-section reveal" id="history">
+        <div class="history-container">
+            <h2 class="section-title">Your <span class="gradient-text">Verification History</span></h2>
+            <div id="userHistoryList" class="history-grid">
+                <div class="feed-placeholder glass" style="padding: 40px; text-align: center; border-radius: var(--radius-md);">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 15px; opacity: 0.5;"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <p>No recent verifications found for your account.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section class="analytics-section reveal" id="analytics" style="padding-bottom: 100px;">
+        <div class="analytics-container">
+            <h2 class="section-title">Platform <span class="gradient-text">Analytics</span></h2>
+            <div class="bento-grid">
+                <div class="stat-card glass bento-item large stagger-1">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total Verifications</div>
+                </div>
+                <div class="stat-card glass bento-item stagger-2">
+                    <div class="stat-value" id="statConfidence">0%</div>
+                    <div class="stat-label">Avg. Confidence</div>
+                </div>
+                <div class="stat-card glass bento-item stagger-3">
+                    <div class="stat-value" id="statTrue">0</div>
+                    <div class="stat-label">Confirmed True</div>
+                </div>
+                <div class="stat-card glass bento-item wide stagger-4">
+                    <div class="stat-value" id="statFalse">0</div>
+                    <div class="stat-label">Confirmed False</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Verification Section -->
+    <section class="verify-section reveal" id="verify">
+        <h2 class="section-title">Verify a <span class="gradient-text">Claim</span></h2>
+        
+        <div class="verify-input-container">
+            <div class="input-card glass">
+                <div class="input-header">
+                    <div class="input-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <span>Enter news headline or claim to verify</span>
+                </div>
+                <div id="referenceChipContainer" class="reference-chip-container"></div>
+                <textarea id="claimInput" placeholder="Example: &quot;Scientists discover new species of deep-sea fish that produces its own light&quot;" rows="4"></textarea>
+                <div class="input-footer">
+                    <div class="input-actions-left">
+                        <label for="fileUpload" class="file-upload-btn magnetic" title="Add reference file">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.82-2.82l8.49-8.48"/></svg>
+                        </label>
+                        <input type="file" id="fileUpload" class="hidden" accept="image/*,application/pdf">
+                        <div class="char-count"><span id="charCount">0</span> / 1000</div>
+                    </div>
+                    <button id="verifyBtn" class="verify-btn magnetic" disabled>
+                        <span class="btn-text">Verify Claim</span>
+                        <span class="btn-loader">
+                            <span class="loader-dot"></span>
+                            <span class="loader-dot"></span>
+                            <span class="loader-dot"></span>
+                        </span>
+                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div id="resultsArea" class="results-area hidden">
+            <div class="results-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: var(--text-primary);">Verification Analysis</h3>
+                <button id="createReportBtn" class="hero-cta" style="padding: 10px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; margin-left: auto; border: none; border-radius: var(--radius-md);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span>Create Analyzed Report</span>
+                </button>
+            </div>
+            
+            <!-- Trust Score -->
+            <div class="trust-score-card" id="trustScoreCard">
+                <div class="trust-gauge">
+                    <svg viewBox="0 0 200 200" class="gauge-svg">
+                        <circle cx="100" cy="100" r="85" class="gauge-bg"/>
+                        <circle cx="100" cy="100" r="85" class="gauge-fill" id="gaugeFill"/>
+                    </svg>
+                    <div class="gauge-value">
+                        <span class="gauge-number" id="gaugeNumber">0</span>
+                        <span class="gauge-label">Trust Score</span>
+                    </div>
+                </div>
+                <div class="trust-info">
+                    <h3 id="verdictLabel">Analyzing...</h3>
+                    <p id="verdictSummary">Processing your claim through multiple AI models...</p>
+                    <div class="verdict-tags" id="verdictTags"></div>
+                </div>
+            </div>
+
+            <!-- AI Model Cards -->
+            <div class="models-grid">
+                <!-- Llama Card -->
+                <div class="model-card" id="llamaCard">
+                    <div class="model-header">
+                        <div class="model-badge llama">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        </div>
+                        <div>
+                            <h4>Llama 3.1</h4>
+                            <span class="model-role">Fact Analysis</span>
+                        </div>
+                        <div class="model-status" id="llamaStatus">
+                            <span class="status-indicator waiting"></span>
+                        </div>
+                    </div>
+                    <div class="model-body" id="llamaBody">
+                        <div class="model-placeholder">Waiting for input...</div>
+                    </div>
+                </div>
+
+                <!-- Mistral Card -->
+                <div class="model-card" id="mistralCard">
+                    <div class="model-header">
+                        <div class="model-badge mistral">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h4>Mistral</h4>
+                            <span class="model-role">Source Credibility</span>
+                        </div>
+                        <div class="model-status" id="mistralStatus">
+                            <span class="status-indicator waiting"></span>
+                        </div>
+                    </div>
+                    <div class="model-body" id="mistralBody">
+                        <div class="model-placeholder">Waiting for input...</div>
+                    </div>
+                </div>
+
+                <!-- Nemotron Card -->
+                <div class="model-card" id="nemotronCard">
+                    <div class="model-header">
+                        <div class="model-badge nemotron">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </div>
+                        <div>
+                            <h4>Nemotron</h4>
+                            <span class="model-role">Bias Detection</span>
+                        </div>
+                        <div class="model-status" id="nemotronStatus">
+                            <span class="status-indicator waiting"></span>
+                        </div>
+                    </div>
+                    <div class="model-body" id="nemotronBody">
+                        <div class="model-placeholder">Waiting for input...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Sources -->
+            <div class="sources-card" id="sourcesCard">
+                <div class="sources-header">
+                    <div class="sources-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </div>
+                    <div>
+                        <h4>Web Sources</h4>
+                        <span>Google Search corroboration</span>
+                    </div>
+                    <div class="model-status" id="googleStatus">
+                        <span class="status-indicator waiting"></span>
+                    </div>
+                </div>
+                <div class="sources-body" id="sourcesBody">
+                    <div class="model-placeholder">Waiting for input...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="brand-icon small">
+                    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="url(#footGrad)" opacity="0.9"/>
+                        <path d="M28 38l-8-8 3-3 5 5 13-13 3 3L28 38z" fill="white"/>
+                        <defs>
+                            <linearGradient id="footGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#00d4ff"/>
+                                <stop offset="1" stop-color="#7c3aed"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span>Verif<span class="brand-accent">AI</span></span>
+            </div>
+            <p class="footer-text">Powered by NVIDIA NIM AI Models & Google Search</p>
+            <p class="footer-disclaimer">⚠️ AI-generated analysis. Always verify critical information through official sources.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="shader.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

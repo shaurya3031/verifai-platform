@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerifAI — Live News Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .updates-container {
+            max-width: 1200px;
+            margin: 120px auto 60px;
+            padding: 0 20px;
+        }
+        
+        .category-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            scrollbar-width: none;
+        }
+        
+        .category-tab {
+            padding: 10px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-full);
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+        
+        .category-tab.active {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .news-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .news-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-5px);
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .news-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .news-description {
+            display: none; /* Hide description for one-line view */
+        }
+        
+        .news-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 0;
+            border: none;
+        }
+        
+        .news-verify-btn {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .news-verify-btn:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .news-category-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            border-radius: 4px;
+            color: var(--accent-cyan);
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .news-source-badge {
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        .news-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        
+        .see-more-container {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .see-more-btn {
+            padding: 12px 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .see-more-btn:hover:not(:disabled) {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+        
+        .see-more-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <nav class="navbar scrolled">
+        <div class="nav-brand">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="url(#navGrad)" opacity="0.9"/>
+                        <path d="M28 38l-8-8 3-3 5 5 13-13 3 3L28 38z" fill="white"/>
+                        <defs>
+                            <linearGradient id="navGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#00d4ff"/>
+                                <stop offset="1" stop-color="#7c3aed"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="brand-name">Verif<span class="brand-accent">AI</span></span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Dashboard</a>
+            <a href="updates.html" class="nav-link active">Live Updates</a>
+            <div id="serverStatus" class="status-indicator offline">Checking...</div>
+            <div id="userProfile" class="user-profile-nav" style="display: none;">
+                <span id="userEmailDisplay" class="user-email-chip"></span>
+                <button id="logoutBtn" class="logout-link" onclick="window.handleLogout()">Logout</button>
+            </div>
+            <a href="index.html#verify" class="nav-link">Verify</a>
+        </div>
+    </nav>
+
+    <div class="updates-container">
+        <header style="margin-bottom: 50px; text-align: center;">
+            <h1 style="font-size: 3rem; margin-bottom: 15px;">Live <span class="gradient-text">News Dashboard</span></h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                Authentic, real-time global news categorized for you. Click any headline to verify its accuracy instantly.
+            </p>
+        </header>
+
+        <div class="category-tabs" id="categoryTabs">
+            <div class="category-tab active" data-category="world">World</div>
+            <div class="category-tab" data-category="war">Global Conflicts</div>
+            <div class="category-tab" data-category="politics">Politics</div>
+            <div class="category-tab" data-category="innovation">Innovation</div>
+            <div class="category-tab" data-category="disasters">Science & Environment</div>
+        </div>
+
+        <div class="news-grid" id="newsGrid">
+            <!-- News items will be injected here -->
+        </div>
+
+        <div class="see-more-container">
+            <button class="see-more-btn" id="seeMoreBtn">See More Headlines</button>
+        </div>
+    </div>
+
+    <!-- Firebase & Auth SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="auth.js"></script>
+    <script src="updates.js"></script>
+    <script>
+        // Particle effect initialization
+        const bg = document.getElementById('bgParticles');
+        if (bg) {
+            for (let i = 0; i < 15; i++) { // Reduced count for stability
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 5 + 's';
+                p.style.background = ['#00d4ff', '#7c3aed', '#10b981'][Math.floor(Math.random() * 3)];
+                bg.appendChild(p);
+            }
+        }
+    </script>
+</body>
+</html>
