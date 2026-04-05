@@ -28,12 +28,19 @@ try {
     console.warn('⚠️  Server will run without Cloud DB persistence.');
 }
 
+// Safe guard — returns true if Firestore is available
+const isDbReady = () => !!db;
+
 /**
  * Initialize Database (Firestore version)
  * In Firestore, we don't need to manually create tables/schemas,
  * but we can ensure the collections exist or log readiness.
  */
 const initDatabase = async () => {
+    if (!isDbReady()) {
+        console.warn('⚠️  Firestore not initialized. Add FIREBASE_SERVICE_ACCOUNT env var.');
+        return;
+    }
     console.log('✅ Firestore (Cloud DB) is ready for operations');
     return Promise.resolve();
 };
@@ -43,6 +50,7 @@ module.exports = {
 
     // Save or update news item
     saveNewsItem: async (item) => {
+        if (!isDbReady()) return null;
         try {
             await db.collection('news').doc(item.id).set({
                 ...item,
@@ -51,12 +59,13 @@ module.exports = {
             return item.id;
         } catch (err) {
             console.error('Firestore saveNewsItem error:', err.message);
-            throw err;
+            return null; // Don't crash — just skip saving
         }
     },
 
     // Get latest news
     getLatestNews: async (maxCount = 20) => {
+        if (!isDbReady()) return [];
         try {
             const snapshot = await db.collection('news')
                 .orderBy('timestamp', 'desc')
@@ -65,12 +74,13 @@ module.exports = {
             return snapshot.docs.map(doc => doc.data());
         } catch (err) {
             console.error('Firestore getLatestNews error:', err.message);
-            throw err;
+            return [];
         }
     },
 
     // Save verification to cache (with user mapping)
     saveVerification: async (v) => {
+        if (!isDbReady()) return false;
         try {
             await db.collection('verifications').add({
                 ...v,
@@ -80,12 +90,13 @@ module.exports = {
             return true;
         } catch (err) {
             console.error('Firestore saveVerification error:', err.message);
-            throw err;
+            return false;
         }
     },
 
     // Get latest verifications for a specific user
     getUserHistory: async (user_email, maxCount = 20) => {
+        if (!isDbReady()) return [];
         try {
             const snapshot = await db.collection('verifications')
                 .where('user_email', '==', user_email)
@@ -95,12 +106,13 @@ module.exports = {
             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch (err) {
             console.error('Firestore getUserHistory error:', err.message);
-            throw err;
+            return [];
         }
     },
 
     // Get verification from cache (for global deduplication)
     getVerification: async (claim_id, model) => {
+        if (!isDbReady()) return null;
         try {
             const snapshot = await db.collection('verifications')
                 .where('claim_id', '==', claim_id)
@@ -108,17 +120,17 @@ module.exports = {
                 .orderBy('createdAt', 'desc')
                 .limit(1)
                 .get();
-            
             if (snapshot.empty) return null;
             return snapshot.docs[0].data();
         } catch (err) {
             console.error('Firestore getVerification error:', err.message);
-            throw err;
+            return null;
         }
     },
 
     // Aggregated Analytics
     getAnalytics: async () => {
+        if (!isDbReady()) return { totalVerifications: 0, modelCounts: {}, verdictCounts: { TRUE: 0, FALSE: 0, MIXED: 0, OTHER: 0 }, averageConfidence: 0 };
         try {
             const snapshot = await db.collection('verifications').get();
             const rows = snapshot.docs.map(doc => doc.data());
@@ -154,6 +166,7 @@ module.exports = {
 
     // Configuration Management
     saveConfig: async (key, value) => {
+        if (!isDbReady()) return false;
         try {
             await db.collection('config').doc(key).set({
                 value: JSON.stringify(value),
@@ -167,6 +180,7 @@ module.exports = {
     },
 
     getConfig: async (key) => {
+        if (!isDbReady()) return null;
         try {
             const doc = await db.collection('config').doc(key).get();
             if (!doc.exists) return null;
