@@ -1,6 +1,12 @@
 # Dependencies
 node_modules/
 
+# Screenshots & Recordings (local only)
+*.png
+*.mp4
+*.jpg
+*.jpeg
+
 # Environment secrets — NEVER commit these
 .env
 serviceAccountKey.json
