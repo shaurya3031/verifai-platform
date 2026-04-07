@@ -10,24 +10,37 @@
         .updates-container {
             max-width: 1200px;
             margin: 120px auto 60px;
-            padding: 0 20px;
+            padding: 0 24px;
+        }
+
+        @media (max-width: 640px) {
+            .updates-container {
+                margin-top: 80px;
+                padding: 0 16px;
+            }
         }
         
         .category-tabs {
             display: flex;
-            gap: 15px;
-            margin-bottom: 40px;
+            gap: 12px;
+            margin-bottom: 30px;
             overflow-x: auto;
-            padding-bottom: 15px;
+            padding: 4px 0 15px;
             scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
         }
         
         .category-tab {
-            padding: 10px 24px;
+            padding: 8px 20px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-card);
             border-radius: var(--radius-full);
             color: var(--text-secondary);
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
@@ -38,14 +51,14 @@
             background: var(--accent-cyan);
             color: var(--bg-primary);
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
         }
         
         .news-grid {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            max-width: 1000px;
+            gap: 16px;
+            max-width: 900px;
             margin: 0 auto;
         }
         
@@ -53,8 +66,8 @@
             background: var(--bg-card);
             backdrop-filter: blur(12px);
             border: 1px solid var(--border-card);
-            border-radius: var(--radius-md);
-            padding: 12px 20px;
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -64,51 +77,44 @@
         }
         
         .news-card:hover {
-            transform: translateY(-5px);
+            transform: translateX(5px);
             background: var(--bg-card-hover);
             border-color: var(--border-hover);
-            box-shadow: var(--shadow-xl);
         }
         
         .news-title {
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--text-primary);
             flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .news-description {
-            display: none; /* Hide description for one-line view */
+            line-height: 1.4;
         }
         
         .news-meta {
             display: flex;
             align-items: center;
-            gap: 20px;
-            font-size: 0.8rem;
+            gap: 16px;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            padding: 0;
-            border: none;
         }
         
         .news-verify-btn {
             background: rgba(0, 212, 255, 0.1);
             color: var(--accent-cyan);
-            border: 1px solid var(--accent-cyan);
-            padding: 6px 16px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 8px 20px;
             border-radius: var(--radius-full);
             font-size: 0.8rem;
             font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
+            white-space: nowrap;
         }
         
         .news-verify-btn:hover {
             background: var(--accent-cyan);
             color: var(--bg-primary);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
         }
 
         .news-category-tag {
@@ -121,21 +127,12 @@
             color: var(--accent-cyan);
             letter-spacing: 0.05em;
             flex-shrink: 0;
-            min-width: 60px;
             text-align: center;
         }
 
         .news-source-badge {
-            font-size: 0.75rem;
-            color: var(--text-primary);
-            opacity: 0.8;
             font-weight: 600;
-        }
-
-        .news-time {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            white-space: nowrap;
+            color: var(--text-primary);
         }
         
         .see-more-container {
@@ -146,9 +143,9 @@
         
         .see-more-btn {
             padding: 12px 40px;
-            background: var(--bg-card);
-            border: 1px solid var(--accent-cyan);
-            color: var(--accent-cyan);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-card);
+            color: var(--text-primary);
             border-radius: var(--radius-full);
             font-weight: 700;
             cursor: pointer;
@@ -156,18 +153,54 @@
         }
         
         .see-more-btn:hover:not(:disabled) {
-            background: var(--accent-cyan);
-            color: var(--bg-primary);
-        }
-        
-        .see-more-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.05);
         }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Mobile Overrides --- */
+        @media (max-width: 1024px) {
+            .updates-container {
+                margin-top: 90px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .updates-container h1 {
+                font-size: 2.2rem !important;
+            }
+            .news-card {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 20px;
+                gap: 16px;
+            }
+            .news-title {
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                font-size: 1.1rem;
+                flex: none;
+            }
+            .news-meta {
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: flex-start;
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+                padding-top: 15px;
+            }
+            .news-verify-btn {
+                width: 100%;
+                text-align: center;
+                margin-top: 5px;
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -205,12 +238,22 @@
     </nav>
 
     <div class="updates-container">
-        <header style="margin-bottom: 50px; text-align: center;">
-            <h1 style="font-size: 3rem; margin-bottom: 15px;">Live <span class="gradient-text">News Dashboard</span></h1>
-            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+        <header style="margin-bottom: 30px; text-align: center;">
+            <h1 class="dashboard-title" style="font-size: 3rem; margin-bottom: 12px;">Live <span class="gradient-text">News Dashboard</span></h1>
+            <p class="dashboard-subtitle" style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; font-size: 1rem;">
                 Authentic, real-time global news categorized for you. Click any headline to verify its accuracy instantly.
             </p>
         </header>
+
+        <style>
+            @media (max-width: 640px) {
+                .dashboard-title { font-size: 1.8rem !important; }
+                .dashboard-subtitle { font-size: 0.85rem !important; }
+                .category-tab { padding: 6px 16px !important; font-size: 0.75rem !important; }
+                .news-card { padding: 16px !important; }
+                .news-title { font-size: 1rem !important; }
+            }
+        </style>
 
         <div class="category-tabs" id="categoryTabs">
             <div class="category-tab active" data-category="world">World</div>

@@ -108,6 +108,23 @@ body::before {
     margin: 0 auto;
 }
 
+@media (max-width: 1024px) {
+    .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+        grid-auto-rows: auto;
+    }
+    .bento-item.large, .bento-item.wide, .bento-item.tall {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+}
+
 .bento-item {
     grid-column: span 1;
     grid-row: span 1;
@@ -208,7 +225,13 @@ body::before {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-card);
-    transition: var(--transition);
+    transition: var(--transition-base);
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 12px 20px;
+    }
 }
 
 .navbar.scrolled {
@@ -249,6 +272,13 @@ body::before {
 .nav-links {
     display: flex;
     gap: 32px;
+    align-items: center;
+}
+
+@media (max-width: 850px) {
+    .nav-links {
+        gap: 15px;
+    }
 }
 
 .nav-link {
@@ -403,7 +433,7 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 120px 60px 80px;
+    padding: 140px 60px 80px;
     gap: 60px;
 }
 
@@ -1574,22 +1604,26 @@ textarea:focus {
     color: var(--bg-primary);
 }
 
-/* ---------- Responsive ---------- */
+/* ---------- Responsive Overrides ---------- */
 @media (max-width: 1024px) {
     .hero {
         flex-direction: column;
         text-align: center;
-        padding: 120px 30px 60px;
+        padding: 140px 40px 80px;
+        gap: 40px;
     }
     .hero-content {
         max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     .hero-subtitle {
         max-width: 100%;
     }
     .hero-visual {
-        width: 320px;
-        height: 320px;
+        width: 350px;
+        height: 350px;
     }
     .steps-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1599,58 +1633,101 @@ textarea:focus {
     }
     .trust-score-card {
         flex-direction: column;
+        gap: 30px;
+        padding: 30px;
         text-align: center;
+    }
+    .trust-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .verdict-tags {
+        justify-content: center;
     }
 }
 
-@media (max-width: 640px) {
-    .navbar {
-        padding: 12px 20px;
+@media (max-width: 768px) {
+    html {
+        font-size: 95%; /* Global scaling down */
     }
-    .nav-links {
-        display: none;
+    .nav-links .nav-link:not(.active-mobile) {
+        display: none; /* Hide secondary links on small mobile */
     }
-    .nav-status span {
-        display: none;
-    }
-    .hero {
-        padding: 100px 20px 40px;
+    .nav-brand .brand-name {
+        font-size: 1.1rem;
     }
     .hero-title {
         font-size: 2.8rem;
     }
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-    .hero-visual {
-        width: 260px;
-        height: 260px;
-    }
-    .how-section,
-    .verify-section {
-        padding: 60px 20px;
-    }
     .section-title {
         font-size: 2rem;
     }
-    .steps-grid {
+}
+
+@media (max-width: 640px) {
+    html {
+        font-size: 90%; /* Further global scaling */
+    }
+    .navbar {
+        padding: 10px 16px;
+    }
+    .nav-status span {
+        display: none;
+    }
+    .nav-auth-buttons {
+        gap: 6px;
+    }
+    .btn-login, .btn-signup {
+        padding: 6px 14px;
+        font-size: 0.75rem;
+    }
+    .hero {
+        padding: 100px 16px 40px;
+    }
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    .hero-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+    }
+    .hero-visual {
+        width: 240px;
+        height: 240px;
+    }
+    .how-section,
+    .verify-section,
+    .features-section,
+    .live-feed-section {
+        padding: 40px 16px;
+    }
+    .steps-grid, .features-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
     }
     .input-card {
-        padding: 20px;
+        padding: 16px;
     }
-    .trust-score-card {
-        padding: 24px;
+    .input-footer {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    .verify-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
     }
     .trust-gauge {
-        width: 140px;
-        height: 140px;
+        width: 130px;
+        height: 130px;
     }
     .gauge-number {
         font-size: 2.2rem;
     }
     .footer {
-        padding: 30px 20px;
+        padding: 30px 16px;
     }
 }
 

@@ -19,6 +19,23 @@
             min-height: 100vh;
             padding-top: 72px;
             gap: 0;
+            position: relative;
+        }
+
+        /* Mobile Backdrop */
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 90;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         /* ===== Right Sidebar (Live News) ===== */
@@ -41,7 +58,7 @@
         }
 
         .live-updates-sidebar.collapsed {
-            transform: translateX(320px);
+            transform: translateX(360px);
         }
 
         .news-feed-container {
@@ -111,36 +128,7 @@
             overflow: hidden;
         }
 
-        .compact-news-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .compact-news-source {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .compact-verify-btn {
-            background: rgba(0, 212, 255, 0.1);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition-base);
-        }
-
-        .compact-verify-btn:hover {
-            background: var(--accent-cyan);
-            color: var(--bg-primary);
-        }
-
-        /* ===== Sidebar ===== */
+        /* ===== History Sidebar ===== */
         .history-sidebar {
             width: 320px;
             min-width: 320px;
@@ -160,7 +148,7 @@
         }
 
         .history-sidebar.collapsed {
-            transform: translateX(-280px);
+            transform: translateX(-320px);
         }
 
         .sidebar-header {
@@ -276,28 +264,6 @@
             overflow: hidden;
         }
 
-        .history-item-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: var(--gradient-main);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .history-item-card:hover {
-            background: rgba(31,41,55,0.7);
-            border-color: rgba(56,189,248,0.25);
-            transform: translateX(3px);
-        }
-
-        .history-item-card:hover::before {
-            opacity: 1;
-        }
-
         .history-item-top {
             display: flex;
             justify-content: space-between;
@@ -313,6 +279,7 @@
             line-height: 1.4;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -329,7 +296,6 @@
         .history-verdict-pill.true { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
         .history-verdict-pill.false { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
         .history-verdict-pill.mixed { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
-        .history-verdict-pill.unknown { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
 
         .history-item-meta {
             display: flex;
@@ -365,13 +331,35 @@
             gap: 12px;
         }
 
-        .sidebar-empty svg { opacity: 0.4; }
-        .sidebar-empty p { font-size: 0.82rem; line-height: 1.5; }
+        .compact-news-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .compact-news-source {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .compact-verify-btn {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
 
         .sidebar-toggle-fab {
             position: fixed;
             top: 88px;
-            left: 328px;
+            left: 320px;
             z-index: 200;
             width: 32px;
             height: 56px;
@@ -385,16 +373,23 @@
             justify-content: center;
             cursor: pointer;
             color: var(--text-muted);
-            transition: color 0.3s, left 0.4s cubic-bezier(0.23, 1, 0.32, 1), background 0.3s;
-        }
-
-        .sidebar-toggle-fab:hover {
-            color: var(--accent-cyan);
-            background: rgba(56,189,248,0.08);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         .sidebar-toggle-fab.sidebar-hidden {
-            left: 40px;
+            left: 0;
+        }
+
+        #newsToggleBtn {
+            left: auto;
+            right: 360px;
+            border-left: 1px solid var(--border-card);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+        }
+
+        #newsToggleBtn.sidebar-hidden {
+            right: 0;
         }
 
         /* ===== Main Content Area ===== */
@@ -408,11 +403,11 @@
         }
 
         .verify-main.sidebar-collapsed {
-            margin-left: 40px;
+            margin-left: 0;
         }
 
         .verify-main.news-collapsed {
-            margin-right: 40px;
+            margin-right: 0;
         }
 
         .verify-page-header {
@@ -420,57 +415,62 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 36px;
+            gap: 20px;
         }
 
-        .verify-page-title {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-
-        .verify-page-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .server-status-chip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 8px 16px;
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            color: var(--accent-emerald);
-            transition: all 0.3s;
-        }
-
-        .server-status-chip.offline {
-            background: rgba(239, 68, 68, 0.08);
-            border-color: rgba(239, 68, 68, 0.2);
-            color: var(--accent-red);
-        }
-
-        /* Responsive sidebar */
-        @media (max-width: 900px) {
-            .history-sidebar {
-                transform: translateX(-320px);
+        @media (max-width: 1200px) {
+            .verify-main {
+                padding: 30px 24px 60px;
             }
-            .history-sidebar.mobile-open {
-                transform: translateX(0);
+        }
+
+        @media (max-width: 1024px) {
+            .history-sidebar, .live-updates-sidebar {
+                z-index: 1000;
+                background: rgba(8, 11, 26, 0.95);
             }
             .verify-main {
-                margin-left: 0;
-                padding: 24px 20px 60px;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-top: 100px;
             }
-            .sidebar-toggle-fab { left: 10px; }
-            .sidebar-toggle-fab.sidebar-hidden { left: 10px; }
+            .sidebar-toggle-fab {
+                top: 80px;
+            }
+            .verify-page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+            .server-status-chip {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .verify-page-title {
+                font-size: 1.4rem;
+            }
+            .verify-page-subtitle {
+                font-size: 0.8rem;
+            }
+            .history-sidebar, .live-updates-sidebar {
+                width: min(300px, 85vw);
+                min-width: unset;
+            }
+            .verify-main {
+                padding: 100px 16px 40px !important;
+            }
+            .sidebar-toggle-fab {
+                width: 28px;
+                height: 48px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <div id="shader-container"></div>
     <div class="bg-overlay"></div>
 
@@ -738,62 +738,92 @@
     <script>
     // ===== Sidebar Toggle Logic =====
     const sidebar = document.getElementById('historySidebar');
+    const newsSidebar = document.getElementById('newsSidebar');
     const verifyMain = document.getElementById('verifyMain');
     const toggleFab = document.getElementById('sidebarToggleBtn');
+    const newsToggleBtn = document.getElementById('newsToggleBtn');
     const collapseBtn = document.getElementById('sidebarCollapseBtn');
+    const newsCollapseBtn = document.getElementById('newsCollapseBtn');
+    const backdrop = document.getElementById('sidebarBackdrop');
     const fabIcon = toggleFab.querySelector('svg path');
+    const newsFabIcon = newsToggleBtn.querySelector('svg path');
 
-    let sidebarOpen = true;
+    let sidebarOpen = window.innerWidth > 1024;
+    let newsOpen = window.innerWidth > 1024;
+
+    function updateMainMargins() {
+        if (window.innerWidth <= 1024) {
+            verifyMain.style.marginLeft = '0';
+            verifyMain.style.marginRight = '0';
+            return;
+        }
+        verifyMain.style.marginLeft = sidebarOpen ? '320px' : '0';
+        verifyMain.style.marginRight = newsOpen ? '360px' : '0';
+    }
 
     function setSidebarState(open) {
         sidebarOpen = open;
         if (open) {
             sidebar.classList.remove('collapsed');
-            verifyMain.classList.remove('sidebar-collapsed');
             toggleFab.classList.remove('sidebar-hidden');
-            toggleFab.style.left = '328px';
-            fabIcon.setAttribute('d', 'M15 18l-6-6 6-6'); // chevron left
-            collapseBtn.querySelector('path').setAttribute('d', 'M15 18l-6-6 6-6');
+            if (window.innerWidth > 1024) {
+                toggleFab.style.left = '320px';
+                fabIcon.setAttribute('d', 'M15 18l-6-6 6-6');
+            } else {
+                backdrop.classList.add('active');
+                setNewsState(false); // Close other sidebar on mobile
+            }
         } else {
             sidebar.classList.add('collapsed');
-            verifyMain.classList.add('sidebar-collapsed');
             toggleFab.classList.add('sidebar-hidden');
-            toggleFab.style.left = '40px';
-            fabIcon.setAttribute('d', 'M9 18l6-6-6-6'); // chevron right
+            toggleFab.style.left = '0';
+            fabIcon.setAttribute('d', 'M9 18l6-6-6-6');
+            if (window.innerWidth <= 1024) backdrop.classList.remove('active');
         }
+        updateMainMargins();
     }
-
-    toggleFab.addEventListener('click', () => setSidebarState(!sidebarOpen));
-    collapseBtn.addEventListener('click', () => setSidebarState(false));
-
-    // ===== News Sidebar Toggle Logic =====
-    const newsSidebar = document.getElementById('newsSidebar');
-    const newsToggleBtn = document.getElementById('newsToggleBtn');
-    const newsCollapseBtn = document.getElementById('newsCollapseBtn');
-    const newsFabIcon = newsToggleBtn.querySelector('svg path');
-
-    let newsOpen = true;
 
     function setNewsState(open) {
         newsOpen = open;
         if (open) {
             newsSidebar.classList.remove('collapsed');
-            verifyMain.classList.remove('news-collapsed');
             newsToggleBtn.classList.remove('sidebar-hidden');
-            newsToggleBtn.style.right = '368px';
-            newsFabIcon.setAttribute('d', 'M9 18l6-6-6-6'); // chevron right (pointing in)
-            newsCollapseBtn.querySelector('path').setAttribute('d', 'M9 18l6-6-6-6');
+            if (window.innerWidth > 1024) {
+                newsToggleBtn.style.right = '360px';
+                newsFabIcon.setAttribute('d', 'M9 18l6-6-6-6');
+            } else {
+                backdrop.classList.add('active');
+                setSidebarState(false); // Close other sidebar on mobile
+            }
         } else {
             newsSidebar.classList.add('collapsed');
-            verifyMain.classList.add('news-collapsed');
             newsToggleBtn.classList.add('sidebar-hidden');
-            newsToggleBtn.style.right = '40px';
-            newsFabIcon.setAttribute('d', 'M15 18l-6-6 6-6'); // chevron left (pointing in)
+            newsToggleBtn.style.right = '0';
+            newsFabIcon.setAttribute('d', 'M15 18l-6-6 6-6');
+            if (window.innerWidth <= 1024) backdrop.classList.remove('active');
         }
+        updateMainMargins();
     }
 
+    toggleFab.addEventListener('click', () => setSidebarState(!sidebarOpen));
     newsToggleBtn.addEventListener('click', () => setNewsState(!newsOpen));
+    collapseBtn.addEventListener('click', () => setSidebarState(false));
     newsCollapseBtn.addEventListener('click', () => setNewsState(false));
+    backdrop.addEventListener('click', () => {
+        setSidebarState(false);
+        setNewsState(false);
+    });
+
+    // Initialize states
+    setSidebarState(sidebarOpen);
+    setNewsState(newsOpen);
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 1024) {
+            backdrop.classList.remove('active');
+        }
+        updateMainMargins();
+    });
 
     // ===== History Search Filter =====
     document.getElementById('historySearchInput').addEventListener('input', function() {
