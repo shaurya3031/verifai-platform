@@ -54,7 +54,8 @@ const initShader = () => {
     camera.position.z = 1;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // Optimize performance for mobile (Capping pixel ratio at 1.5)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     container.appendChild(renderer.domElement);
 
     const geometry = new THREE.PlaneGeometry(2, 2);

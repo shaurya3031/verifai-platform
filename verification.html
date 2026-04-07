@@ -427,7 +427,9 @@
         @media (max-width: 1024px) {
             .history-sidebar, .live-updates-sidebar {
                 z-index: 1000;
-                background: rgba(8, 11, 26, 0.95);
+                background: rgba(8, 11, 26, 0.98);
+                backdrop-filter: none !important; /* Disable expensive blur on mobile to fix lag */
+                -webkit-backdrop-filter: none !important;
             }
             .verify-main {
                 margin-left: 0 !important;
@@ -456,15 +458,32 @@
                 font-size: 0.8rem;
             }
             .history-sidebar, .live-updates-sidebar {
-                width: min(300px, 85vw);
+                width: 85vw; /* Percentage width to prevent jumbling */
                 min-width: unset;
             }
             .verify-main {
-                padding: 100px 16px 40px !important;
+                padding: 100px 12px 40px !important;
             }
             .sidebar-toggle-fab {
-                width: 28px;
-                height: 48px;
+                width: 44px;
+                height: 44px;
+                border-radius: 50% 0 0 50%;
+                top: auto;
+                bottom: 100px;
+            }
+            #sidebarToggleBtn {
+                border-radius: 0 50% 50% 0;
+                left: 85vw;
+            }
+            #sidebarToggleBtn.sidebar-hidden {
+                left: 0;
+            }
+            #newsToggleBtn {
+                right: 85vw;
+                border-radius: 50% 0 0 50%;
+            }
+            #newsToggleBtn.sidebar-hidden {
+                right: 0;
             }
         }
     </style>
@@ -507,10 +526,18 @@
         </div>
     </nav>
 
-    <!-- Sidebar Toggle FAB -->
-    <button class="sidebar-toggle-fab" id="sidebarToggleBtn" title="Toggle history sidebar">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M9 18l6-6-6-6"/>
+    <!-- Sidebar Toggle FABs -->
+    <button class="sidebar-toggle-fab" id="sidebarToggleBtn" title="Show History">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+    </button>
+    <button class="sidebar-toggle-fab" id="newsToggleBtn" title="Show Live News">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 19a2 2 0 0 1-2-2v-1"/>
+            <path d="M19 8a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H7"/>
+            <path d="M16 12H7"/>
+            <path d="M11 16H7"/>
         </svg>
     </button>
 
