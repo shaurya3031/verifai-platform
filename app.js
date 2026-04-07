@@ -263,6 +263,101 @@ const renderFileChip = (filename, isImage = false) => {
     };
 };
 
+// --- Auto-Fill Handler ---
+const autoFillFromUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    const claim = params.get('claim') || localStorage.getItem('pendingClaim');
+    
+    if (claim && claimInput) {
+        console.log('📝 Auto-filling claim:', claim);
+        claimInput.value = claim;
+        charCount.textContent = claim.length;
+        verifyBtn.disabled = claim.length < 10;
+        
+        // Clear storage
+        localStorage.removeItem('pendingClaim');
+        
+        // Scroll to input
+        setTimeout(() => {
+            claimInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            claimInput.focus();
+        }, 500);
+    }
+};
+
+// --- Workspace News Feed (Right Sidebar) ---
+let currentNewsCategory = 'world';
+
+const initWorkspaceNews = () => {
+    const newsTabs = document.getElementById('workspaceNewsTabs');
+    if (!newsTabs) return;
+
+    newsTabs.addEventListener('click', (e) => {
+        const tab = e.target.closest('.news-tab');
+        if (!tab || tab.classList.contains('active')) return;
+
+        newsTabs.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        currentNewsCategory = tab.dataset.category;
+        loadWorkspaceNews(currentNewsCategory);
+    });
+
+    // Initial load
+    loadWorkspaceNews(currentNewsCategory);
+    
+    // Refresh every 2 minutes
+    setInterval(() => loadWorkspaceNews(currentNewsCategory), 120000);
+};
+
+const loadWorkspaceNews = async (category) => {
+    const feedList = document.getElementById('newsFeedList');
+    if (!feedList) return;
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/news?category=${category}&page=1`);
+        const data = await res.json();
+        
+        if (data.items && data.items.length > 0) {
+            renderWorkspaceNews(data.items);
+        }
+    } catch (err) {
+        console.error('Error loading workspace news:', err);
+    }
+};
+
+const renderWorkspaceNews = (items) => {
+    const feedList = document.getElementById('newsFeedList');
+    if (!feedList) return;
+
+    // Use escapeHtml from app.js utilities
+    feedList.innerHTML = items.slice(0, 8).map(item => `
+        <div class="compact-news-card">
+            <div class="compact-news-title">${escapeHtml(item.title)}</div>
+            <div class="compact-news-footer">
+                <span class="compact-news-source">${escapeHtml(item.source || 'General')}</span>
+                <button class="compact-verify-btn" onclick="handleVerifyNow('${escapeHtml(item.title).replace(/'/g, "\\'")}')">Verify</button>
+            </div>
+        </div>
+    `).join('');
+};
+
+// Handle "Verify" click from within the workspace feed
+window.handleVerifyNow = (claim) => {
+    if (claimInput) {
+        claimInput.value = claim;
+        charCount.textContent = claim.length;
+        verifyBtn.disabled = claim.length < 10;
+        claimInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        claimInput.focus();
+        
+        // Visual feedback
+        claimInput.parentElement.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.4)';
+        setTimeout(() => {
+            claimInput.parentElement.style.boxShadow = '';
+        }, 1200);
+    }
+};
 
 // ==========================================
 // 🚀 Advanced Animation Engine
@@ -335,6 +430,8 @@ const initApp = () => {
     initMagneticButtons();
     initAuthProfile();
     initFileHandling();
+    initWorkspaceNews();
+    autoFillFromUrl();
     
     // Initial reveal for hero
     setTimeout(() => {

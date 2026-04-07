@@ -53,8 +53,9 @@ app.use(cors({
         // Allow any localhost, 127.0.0.1, or common local ports (covers Live Server 5500/5501)
         const allowedPorts = [':3000', ':5500', ':5501', ':8080'];
         const allowedDomains = ['localhost', '127.0.0.1', 'render.com', 'railway.app'];
-        
-        const isAllowed = allowedDomains.some(d => origin.includes(d)) || allowedPorts.some(p => origin.includes(p));
+        const isAllowed = allowedDomains.some(d => origin.includes(d)) || 
+                          allowedPorts.some(p => origin.includes(p)) ||
+                          origin.includes('127.0.0.1');
         
         if (isAllowed) {
             return callback(null, true);
@@ -358,6 +359,132 @@ app.post('/api/config/firebase', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// ==========================================
+// 🌤️ Weather Proxy (Resolves CORS for local files)
+// ==========================================
+app.get('/api/proxy/weather', async (req, res) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: 'Missing coordinates' });
+
+    // --- Provider 1: Open-Meteo (Detailed) ---
+    try {
+        console.log(`🌦️ [Source A] Fetching weather for: ${lat}, ${lon}`);
+        const urlA = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`;
+        const responseA = await axios.get(urlA, { timeout: 8000 });
+        return res.json(responseA.data);
+    } catch (errA) {
+        console.warn('⚠️ [Source A] Failed, trying fallback...', errA.message);
+    }
+
+    // --- Provider 2: 7Timer (Resilient 7-Day Backup) ---
+    try {
+        console.log(`🌦️ [Source B] Fetching scientific 7-day backup...`);
+        const urlB = `http://www.7timer.info/bin/api.pl?lon=${lon}&lat=${lat}&product=civil&output=json`;
+        const responseB = await axios.get(urlB, { timeout: 8000 });
+        
+        const forecast = responseB.data.dataseries;
+        const normalizedDataB = {
+            current: {
+                temperature_2m: parseFloat(forecast[0].temp2m),
+                relative_humidity_2m: 50,
+                wind_speed_10m: 10,
+                weather_code: 0,
+                uv_index: 5
+            },
+            daily: {
+                time: Array.from({length: 7}, (_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() + i);
+                    return d.toISOString().split('T')[0];
+                }),
+                weather_code: Array.from({length: 7}, () => 0),
+                temperature_2m_max: Array.from({length: 7}, (_, i) => forecast[i*8]?.temp2m || 30),
+                temperature_2m_min: Array.from({length: 7}, (_, i) => (forecast[i*8]?.temp2m || 30) - 5),
+                uv_index_max: Array.from({length: 7}, () => 5)
+            },
+            source: 'backup-7timer'
+        };
+        return res.json(normalizedDataB);
+    } catch (errB) {
+        console.warn('⚠️ [Source B] Failed, trying emergency source...', errB.message);
+    }
+
+    // --- Provider 3: wttr.in (Resilient 3-Day Last Resort) ---
+    try {
+        console.log(`🌦️ [Source C] Fetching emergency backup weather...`);
+        const urlC = `https://wttr.in/${lat},${lon}?format=j1`;
+        const responseC = await axios.get(urlC, { timeout: 8000 });
+        
+        const currentData = responseC.data.current_condition[0];
+        const normalizedDataC = {
+            current: {
+                temperature_2m: parseFloat(currentData.temp_C),
+                relative_humidity_2m: parseFloat(currentData.humidity),
+                wind_speed_10m: parseFloat(currentData.windspeedKmph),
+                weather_code: 0,
+                uv_index: parseFloat(currentData.uvIndex)
+            },
+            daily: {
+                time: responseC.data.weather.map(w => w.date),
+                weather_code: responseC.data.weather.map(() => 0),
+                temperature_2m_max: responseC.data.weather.map(w => parseFloat(w.maxtempC)),
+                temperature_2m_min: responseC.data.weather.map(w => parseFloat(w.mintempC)),
+                uv_index_max: responseC.data.weather.map(w => parseFloat(w.uvIndex))
+            },
+            source: 'backup-emergency'
+        };
+        return res.json(normalizedDataC);
+    } catch (errC) {
+        console.error('❌ [Source C] Failed:', errC.message);
+        res.status(500).json({ error: 'Total network failure: All weather sources blocked.' });
+    }
+});
+
+app.get('/api/proxy/location', async (req, res) => {
+    try {
+        const { lat, lon } = req.query;
+        
+        // --- Strategy 1: Google Geocoding (Professional & Reliable) ---
+        if (process.env.GOOGLE_API_KEY) {
+            console.log(`📍 [Google] Resolving location: ${lat}, ${lon}`);
+            const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${process.env.GOOGLE_API_KEY}`;
+            const gRes = await axios.get(googleUrl, { timeout: 5000 });
+            
+            if (gRes.data.status === 'OK' && gRes.data.results.length > 0) {
+                const ac = gRes.data.results[0].address_components;
+                // Aggressive search for any city-like name
+                const city = ac.find(c => c.types.includes('locality'))?.long_name || 
+                             ac.find(c => c.types.includes('sublocality_level_1'))?.long_name ||
+                             ac.find(c => c.types.includes('administrative_area_level_2'))?.long_name ||
+                             ac.find(c => c.types.includes('neighborhood'))?.long_name ||
+                             ac.find(c => c.types.includes('postal_town'))?.long_name || 'Your Region';
+                             
+                const country = ac.find(c => c.types.includes('country'))?.long_name || 'India';
+                
+                console.log(`✅ [Google] Resolved: ${city}, ${country}`);
+                return res.json({ 
+                    address: { city, country },
+                    display_name: gRes.data.results[0].formatted_address
+                });
+            }
+        }
+
+        // --- Strategy 2: Nominatim (Open Source Backup) ---
+        console.log(`📍 [Nominatim] Resolving location: ${lat}, ${lon}`);
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+        const response = await axios.get(url, {
+            headers: { 'User-Agent': 'VerifAI-Platform-Client/1.0' },
+            timeout: 5000
+        });
+        res.json(response.data);
+    } catch (err) {
+        console.warn('⚠️ Location Lookup failed, using generic fallback.', err.message);
+        res.json({ 
+            address: { city: 'Verified', country: 'Region' },
+            display_name: 'Your Current Region'
+        });
+    }
+});
 
 const server = http.listen(PORT, '0.0.0.0', async () => {
     // Initialize Firestore Database
@@ -382,7 +509,8 @@ const server = http.listen(PORT, '0.0.0.0', async () => {
     console.log(`  🌐  Local Access:   ${localUrl}`);
     console.log(`  📱  Network Access: ${networkUrl} (Share this with others on your Wi-Fi!)`);
     console.log(`  🤖  3 AI Models ready (Llama 3.1, Mistral, Nemotron)`);
-    console.log(`  🔑  NVIDIA API Key: ${NVIDIA_API_KEY ? '✓ configured' : '✗ missing'}`);
+    console.log(`  🔑  NVIDIA API Key: ${process.env.NVIDIA_API_KEY ? '✓ configured' : '✗ missing'}`);
+    console.log(`  🔑  Google API Key: ${process.env.GOOGLE_API_KEY ? '✓ configured' : '✗ missing'}`);
     
     // Initial fetch to populate news immediately
     await fetchLatestNewsAndVerify().catch(e => console.error('Initial Fetch error:', e.message));

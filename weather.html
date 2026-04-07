@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verif-AI — Verify your local weather conditions with real-time atmospheric data.">
+    <title>Verif-AI — Weather Verification</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .weather-container {
+            max-width: 1000px;
+            margin: 120px auto 80px;
+            padding: 0 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .weather-hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .weather-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 16px;
+        }
+
+        .weather-hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- Main Weather Card --- */
+        .main-weather-card {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 40px;
+            padding: 60px;
+            border-radius: var(--radius-xl);
+            margin-bottom: 40px;
+            min-height: 400px;
+            align-items: center;
+            transition: var(--transition-smooth);
+        }
+
+        .weather-loc-info h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .weather-loc-info .date {
+            color: var(--accent-cyan);
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .temp-display {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .temp-value {
+            font-size: 6rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -4px;
+        }
+
+        .temp-unit {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        .weather-condition {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* --- Detailed Stats Grid --- */
+        .weather-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+            transition: var(--transition-base);
+        }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        .stat-icon {
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        /* --- 7-Day Forecast --- */
+        .forecast-section {
+            margin-top: 60px;
+        }
+
+        .forecast-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+        }
+
+        .forecast-card {
+            padding: 24px 16px;
+            text-align: center;
+            border-radius: var(--radius-md);
+            transition: var(--transition-smooth);
+        }
+
+        .forecast-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent-cyan);
+        }
+
+        .forecast-day {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .forecast-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .forecast-temp {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .forecast-temp span {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-left: 4px;
+        }
+
+        /* --- Permission UI --- */
+        .permission-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            z-index: 20;
+        }
+
+        .permission-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-verify-loc {
+            padding: 16px 36px;
+            font-size: 1.1rem;
+            margin-top: 24px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 900px) {
+            .main-weather-card { grid-template-columns: 1fr; padding: 40px; }
+            .forecast-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .forecast-grid { grid-template-columns: repeat(2, 1fr); }
+            .weather-stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="shader-container"></div>
+    <div class="bg-overlay"></div>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="url(#navGrad)" opacity="0.9"/>
+                    <path d="M28 38l-8-8 3-3 5 5 13-13 3 3L28 38z" fill="white"/>
+                    <defs>
+                        <linearGradient id="navGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00d4ff"/>
+                            <stop offset="1" stop-color="#7c3aed"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <span class="brand-name">Verif-<span class="brand-accent">AI</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="verification.html" class="nav-link">Workspace</a>
+            <a href="updates.html" class="nav-link">Live Updates</a>
+            <a href="weather.html" class="nav-link active">Weather</a>
+        </div>
+        <div class="nav-auth-buttons">
+            <a href="auth.html" class="btn-signup">Get Started</a>
+        </div>
+    </nav>
+
+    <div class="weather-container">
+        <header class="weather-hero">
+            <h1>Weather <span class="gradient-text">Verification</span></h1>
+            <p>Atmospheric truth engine. Verify current conditions and access a detailed 7-day atmospheric report for your specific region.</p>
+        </header>
+
+        <section class="main-weather-card glass" id="weatherContent">
+            <!-- Permission State -->
+            <div id="permissionState" class="permission-overlay">
+                <div class="permission-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <h3>Requires Location Access</h3>
+                <p>To verify the atmosphere in your region, Verif-AI requires coordinate data.</p>
+                <button class="hero-cta btn-verify-loc magnetic" id="locBtn">
+                    <span>Verify My Location</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+
+            <!-- Loading State (Shimmer) -->
+            <div id="loadingState" class="permission-overlay hidden">
+                <div class="shimmer-card" style="width:100%;height:100%;"></div>
+                <p style="margin-top: 20px;">Fetching global atmospheric data...</p>
+            </div>
+
+            <!-- Data State -->
+            <div id="dataState" class="hidden" style="display: contents;">
+                <div class="weather-loc-info">
+                    <span class="date" id="currentDate">Tuesday, April 07</span>
+                    <h2 id="cityName">Detecting Location...</h2>
+                    <div class="temp-display">
+                        <span class="temp-value" id="currentTemp">--</span>
+                        <span class="temp-unit">°C</span>
+                    </div>
+                    <div class="weather-condition">
+                        <span id="weatherIcon" style="font-size: 2.4rem;">☀️</span>
+                        <span id="weatherText">Clear Skies</span>
+                    </div>
+                </div>
+
+                <div class="weather-stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></span>
+                        <div class="stat-label">UV Index</div>
+                        <div class="stat-value" id="uvIndex">--</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22a7 7 0 007-7c0-2-1-3.9-3-5.5s-3-4-4-6.5c-1 2.5-2 4.9-4 6.5s-3 3.5-3 5.5a7 7 0 007 7z"/></svg></span>
+                        <div class="stat-label">Humidity</div>
+                        <div class="stat-value" id="humidity">--%</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/></svg></span>
+                        <div class="stat-label">Wind Speed</div>
+                        <div class="stat-value" id="windSpeed">-- km/h</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weekly Forecast Report -->
+        <section class="forecast-section reveal hidden" id="forecastSection">
+            <h2 class="forecast-title">
+                <span class="gradient-text">Weekly</span> Verification Report
+            </h2>
+            <div class="forecast-grid" id="forecastGrid">
+                <!-- Days injected here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="shader.js"></script>
+    <script src="weather.js"></script>
+</body>
+</html>

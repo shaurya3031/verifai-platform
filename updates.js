@@ -157,9 +157,8 @@ function createShimmerCard() {
 }
 
 function verifyNews(title) {
-    // Redirect to home with claim in URL or use localStorage
-    localStorage.setItem('pendingClaim', title);
-    window.location.href = 'index.html#verify';
+    // Redirect to verification workspace with claim in URL
+    window.location.href = `verification.html?claim=${encodeURIComponent(title)}`;
 }
 
 function escapeHtml(text) {
