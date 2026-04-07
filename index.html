@@ -11,6 +11,361 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== Landing-Page Only Styles ===== */
+        .nav-auth-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-login {
+            padding: 9px 22px;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-card);
+            border-radius: 9999px;
+            font-family: var(--font);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition-base);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-login:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.06);
+        }
+
+        .btn-signup {
+            padding: 9px 22px;
+            background: var(--gradient-main);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            font-family: var(--font);
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition-base);
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 12px rgba(0, 212, 255, 0.25);
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        /* ===== Features Section ===== */
+        .features-section {
+            position: relative;
+            z-index: 1;
+            padding: 100px 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 36px 28px;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--gradient-main);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(56, 189, 248, 0.25);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover::before { opacity: 1; }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 22px;
+            font-size: 1.5rem;
+        }
+
+        .feature-icon.cyan { background: rgba(0, 212, 255, 0.1); color: var(--accent-cyan); }
+        .feature-icon.purple { background: rgba(124, 58, 237, 0.1); color: var(--accent-purple); }
+        .feature-icon.emerald { background: rgba(52, 211, 153, 0.1); color: var(--accent-emerald); }
+        .feature-icon.amber { background: rgba(251, 191, 36, 0.1); color: var(--accent-amber); }
+        .feature-icon.pink { background: rgba(244, 114, 182, 0.1); color: var(--accent-pink); }
+        .feature-icon.red { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); }
+
+        .feature-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        /* ===== About Section ===== */
+        .about-section {
+            position: relative;
+            z-index: 1;
+            padding: 100px 60px;
+            background: rgba(8, 11, 26, 0.5);
+        }
+
+        .about-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 72px;
+            align-items: center;
+        }
+
+        .about-text h2 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+
+        .about-text p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.75;
+            margin-bottom: 20px;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .about-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+            transition: var(--transition-base);
+        }
+
+        .about-stat:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .about-stat-value {
+            font-size: 2.4rem;
+            font-weight: 900;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .about-stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .team-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+        }
+
+        .team-card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent-cyan);
+        }
+
+        .mission-points {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .mission-points li {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .mission-points li::before {
+            content: '✦';
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ===== CTA Banner ===== */
+        .cta-section {
+            position: relative;
+            z-index: 1;
+            padding: 80px 60px;
+            text-align: center;
+        }
+
+        .cta-card {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(0, 212, 255, 0.04);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: var(--radius-xl);
+            padding: 70px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .cta-card h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .cta-card p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            margin-bottom: 36px;
+            line-height: 1.65;
+        }
+
+        /* ===== Privacy Policy Section ===== */
+        .privacy-section {
+            position: relative;
+            z-index: 1;
+            padding: 80px 60px;
+            background: rgba(3, 7, 18, 0.6);
+        }
+
+        .privacy-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .privacy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            margin-top: 48px;
+        }
+
+        .privacy-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 28px;
+            transition: var(--transition-base);
+        }
+
+        .privacy-block:hover {
+            border-color: rgba(56, 189, 248, 0.2);
+        }
+
+        .privacy-block-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 255, 0.08);
+            color: var(--accent-cyan);
+            margin-bottom: 16px;
+        }
+
+        .privacy-block h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .privacy-block p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        /* ===== Enhanced Footer ===== */
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.82rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--accent-cyan); }
+
+        @media (max-width: 900px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .about-container { grid-template-columns: 1fr; gap: 40px; }
+            .privacy-grid { grid-template-columns: 1fr; }
+            .features-section, .about-section, .privacy-section { padding: 60px 24px; }
+            .cta-section { padding: 60px 24px; }
+            .cta-card { padding: 50px 28px; }
+        }
+    </style>
 </head>
 <body>
     <!-- Shader Background -->
@@ -35,17 +390,14 @@
             <span class="brand-name">Verif-<span class="brand-accent">AI</span></span>
         </div>
         <div class="nav-links">
-            <a href="index.html" class="nav-link active">Dashboard</a>
+            <a href="index.html" class="nav-link active">Home</a>
+            <a href="#about" class="nav-link">About Us</a>
+            <a href="#privacy" class="nav-link">Privacy</a>
             <a href="updates.html" class="nav-link">Live Updates</a>
-            <div id="serverStatus" class="status-indicator offline">Checking...</div>
-            <div id="userProfile" class="user-profile-nav" style="display: none;">
-                <span id="userEmailDisplay" class="user-email-chip"></span>
-                <button id="logoutBtn" class="logout-link" onclick="window.handleLogout()">Logout</button>
-            </div>
         </div>
-        <div class="nav-status">
-            <div class="status-dot"></div>
-            <span>3 AI Models Online</span>
+        <div class="nav-auth-buttons">
+            <a href="auth.html" class="btn-login" id="navLoginBtn">Login</a>
+            <a href="auth.html" class="btn-signup" id="navSignupBtn">Get Started Free</a>
         </div>
     </nav>
 
@@ -64,12 +416,16 @@
                 Paste any news headline or claim — our ensemble of <strong>3 AI models</strong> and <strong>web search</strong> will analyze it for accuracy, bias, and credibility in seconds.
             </p>
             <div class="hero-actions stagger-4">
-                <a href="#verify" class="hero-cta magnetic" id="heroCta">
-                    <span>Start Verifying</span>
+                <a href="auth.html" class="hero-cta magnetic" id="heroCta">
+                    <span>Get Started Free</span>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
                     </svg>
+                </a>
+                <a href="#about" class="btn-login" style="display:inline-flex;align-items:center;gap:8px;">
+                    Learn More
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
                 </a>
             </div>
         </div>
@@ -137,184 +493,162 @@
         </div>
     </section>
 
-    <!-- History Section (Now Private) -->
-    <section class="history-section reveal" id="history">
-        <div class="history-container">
-            <h2 class="section-title">Your <span class="gradient-text">Verification History</span></h2>
-            <div id="userHistoryList" class="history-grid">
-                <div class="feed-placeholder glass" style="padding: 40px; text-align: center; border-radius: var(--radius-md);">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 15px; opacity: 0.5;"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <p>No recent verifications found for your account.</p>
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <h2 class="section-title reveal">Why Choose <span class="gradient-text">Verif-AI</span></h2>
+        <div class="features-grid reveal">
+            <div class="feature-card stagger-1">
+                <div class="feature-icon cyan">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                </div>
+                <h3>Triple AI Verification</h3>
+                <p>Llama 3.1, Mistral, and Nemotron work in parallel to provide diverse, cross-checked analysis — no single point of failure.</p>
+            </div>
+            <div class="feature-card stagger-2">
+                <div class="feature-icon purple">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h3>Real-Time Results</h3>
+                <p>Get analysis in seconds. Our backend processes AI queries and web searches simultaneously for the fastest possible verdicts.</p>
+            </div>
+            <div class="feature-card stagger-3">
+                <div class="feature-icon emerald">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <h3>Trust Score System</h3>
+                <p>Our weighted trust score (0–100) combines all model outputs and source corroboration into one clear, human-interpretable metric.</p>
+            </div>
+            <div class="feature-card stagger-1">
+                <div class="feature-icon amber">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <h3>Bias Detection</h3>
+                <p>Nemotron specializes in detecting emotional language, partisan framing, and media bias patterns — going beyond simple fact-checking.</p>
+            </div>
+            <div class="feature-card stagger-2">
+                <div class="feature-icon pink">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3>Verification History</h3>
+                <p>Your personal verification history is saved and displayed in a sidebar so you can track past checks and revisit any claim.</p>
+            </div>
+            <div class="feature-card stagger-3">
+                <div class="feature-icon red">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <h3>Export PDF Reports</h3>
+                <p>Generate professional, branded PDF reports for any verification — perfect for journalism, research, or sharing with colleagues.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="about-section" id="about">
+        <div class="about-container">
+            <div class="about-text reveal">
+                <h2>About <span class="gradient-text">Verif-AI</span></h2>
+                <p>
+                    Verif-AI was built to solve a critical problem in the modern information ecosystem: <strong>anyone can publish anything</strong>, and it's increasingly hard to know what's true.
+                </p>
+                <p>
+                    We combine the power of NVIDIA's cutting-edge AI models with real-time Google Search corroboration to give you a multi-dimensional, reliable verdict on any news claim — in seconds.
+                </p>
+                <p>
+                    Our mission is to put professional-grade fact-checking tools in the hands of everyone: journalists, researchers, students, and everyday readers who care about truth.
+                </p>
+            </div>
+            <div class="reveal stagger-2">
+                <div class="about-stats" style="margin-bottom: 24px;">
+                    <div class="about-stat">
+                        <div class="about-stat-value">3</div>
+                        <div class="about-stat-label">AI Models Working in Parallel</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-value">< 30s</div>
+                        <div class="about-stat-label">Average Verification Time</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-value">100%</div>
+                        <div class="about-stat-label">Private & Secure</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-value">∞</div>
+                        <div class="about-stat-label">Claims You Can Verify</div>
+                    </div>
+                </div>
+                <div class="team-card glass">
+                    <h3>Our Mission</h3>
+                    <ul class="mission-points">
+                        <li>Combat misinformation with accessible, AI-powered tools</li>
+                        <li>Provide transparent, multi-model analysis — not a black box</li>
+                        <li>Empower users to verify claims before sharing</li>
+                        <li>Support journalists, researchers, and educators</li>
+                        <li>Make truth verification fast, reliable, and free</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Analytics Section -->
-    <section class="analytics-section reveal" id="analytics" style="padding-bottom: 100px;">
-        <div class="analytics-container">
-            <h2 class="section-title">Platform <span class="gradient-text">Analytics</span></h2>
-            <div class="bento-grid">
-                <div class="stat-card glass bento-item large stagger-1">
-                    <div class="stat-value" id="statTotal">0</div>
-                    <div class="stat-label">Total Verifications</div>
-                </div>
-                <div class="stat-card glass bento-item stagger-2">
-                    <div class="stat-value" id="statConfidence">0%</div>
-                    <div class="stat-label">Avg. Confidence</div>
-                </div>
-                <div class="stat-card glass bento-item stagger-3">
-                    <div class="stat-value" id="statTrue">0</div>
-                    <div class="stat-label">Confirmed True</div>
-                </div>
-                <div class="stat-card glass bento-item wide stagger-4">
-                    <div class="stat-value" id="statFalse">0</div>
-                    <div class="stat-label">Confirmed False</div>
-                </div>
-            </div>
+    <!-- CTA Banner -->
+    <section class="cta-section">
+        <div class="cta-card reveal">
+            <h2>Ready to start <span class="gradient-text">verifying?</span></h2>
+            <p>Join Verif-AI and get instant access to three AI models, web corroboration, and your personal verification history — all for free.</p>
+            <a href="auth.html" class="hero-cta magnetic" id="ctaSignupBtn" style="display: inline-flex;">
+                <span>Create Free Account</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
         </div>
     </section>
 
-    <!-- Verification Section -->
-    <section class="verify-section reveal" id="verify">
-        <h2 class="section-title">Verify a <span class="gradient-text">Claim</span></h2>
-        
-        <div class="verify-input-container">
-            <div class="input-card glass">
-                <div class="input-header">
-                    <div class="input-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <!-- Privacy Policy Section -->
+    <section class="privacy-section" id="privacy">
+        <div class="privacy-container">
+            <h2 class="section-title reveal">Privacy <span class="gradient-text">Policy</span></h2>
+            <p style="text-align:center;color:var(--text-secondary);max-width:600px;margin:0 auto 8px;font-size:0.95rem;">Last updated: April 2026 — We respect your privacy and are committed to protecting your data.</p>
+            <div class="privacy-grid reveal">
+                <div class="privacy-block">
+                    <div class="privacy-block-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     </div>
-                    <span>Enter news headline or claim to verify</span>
+                    <h4>What We Collect</h4>
+                    <p>We collect your email address for authentication and the claims you verify. No personal identifying information beyond your email is required or stored.</p>
                 </div>
-                <div id="referenceChipContainer" class="reference-chip-container"></div>
-                <textarea id="claimInput" placeholder="Example: &quot;Scientists discover new species of deep-sea fish that produces its own light&quot;" rows="4"></textarea>
-                <div class="input-footer">
-                    <div class="input-actions-left">
-                        <label for="fileUpload" class="file-upload-btn magnetic" title="Add reference file">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.82-2.82l8.49-8.48"/></svg>
-                        </label>
-                        <input type="file" id="fileUpload" class="hidden" accept="image/*,application/pdf">
-                        <div class="char-count"><span id="charCount">0</span> / 1000</div>
+                <div class="privacy-block">
+                    <div class="privacy-block-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     </div>
-                    <button id="verifyBtn" class="verify-btn magnetic" disabled>
-                        <span class="btn-text">Verify Claim</span>
-                        <span class="btn-loader">
-                            <span class="loader-dot"></span>
-                            <span class="loader-dot"></span>
-                            <span class="loader-dot"></span>
-                        </span>
-                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    </button>
+                    <h4>How We Use Your Data</h4>
+                    <p>Your verification history is stored to provide you a personalized history sidebar. We do not sell, share, or use your data for advertising purposes.</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- Results Area -->
-        <div id="resultsArea" class="results-area hidden">
-            <div class="results-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="margin: 0; color: var(--text-primary);">Verification Analysis</h3>
-                <button id="createReportBtn" class="hero-cta" style="padding: 10px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; margin-left: auto; border: none; border-radius: var(--radius-md);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    <span>Create Analyzed Report</span>
-                </button>
-            </div>
-            
-            <!-- Trust Score -->
-            <div class="trust-score-card" id="trustScoreCard">
-                <div class="trust-gauge">
-                    <svg viewBox="0 0 200 200" class="gauge-svg">
-                        <circle cx="100" cy="100" r="85" class="gauge-bg"/>
-                        <circle cx="100" cy="100" r="85" class="gauge-fill" id="gaugeFill"/>
-                    </svg>
-                    <div class="gauge-value">
-                        <span class="gauge-number" id="gaugeNumber">0</span>
-                        <span class="gauge-label">Trust Score</span>
+                <div class="privacy-block">
+                    <div class="privacy-block-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     </div>
+                    <h4>Third-Party Services</h4>
+                    <p>We use Firebase for authentication, NVIDIA NIM models for AI analysis, and Google Custom Search for web corroboration. Each service has its own privacy policy.</p>
                 </div>
-                <div class="trust-info">
-                    <h3 id="verdictLabel">Analyzing...</h3>
-                    <p id="verdictSummary">Processing your claim through multiple AI models...</p>
-                    <div class="verdict-tags" id="verdictTags"></div>
+                <div class="privacy-block">
+                    <div class="privacy-block-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                    </div>
+                    <h4>Data Retention & Deletion</h4>
+                    <p>Your verification history is retained to provide history features. You may request deletion of your account and all associated data by contacting us.</p>
                 </div>
-            </div>
-
-            <!-- AI Model Cards -->
-            <div class="models-grid">
-                <!-- Llama Card -->
-                <div class="model-card" id="llamaCard">
-                    <div class="model-header">
-                        <div class="model-badge llama">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                        </div>
-                        <div>
-                            <h4>Llama 3.1</h4>
-                            <span class="model-role">Fact Analysis</span>
-                        </div>
-                        <div class="model-status" id="llamaStatus">
-                            <span class="status-indicator waiting"></span>
-                        </div>
+                <div class="privacy-block">
+                    <div class="privacy-block-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                     </div>
-                    <div class="model-body" id="llamaBody">
-                        <div class="model-placeholder">Waiting for input...</div>
-                    </div>
+                    <h4>Cookies</h4>
+                    <p>We use essential cookies only — required for Firebase authentication. We do not use tracking or advertising cookies. No cookie consent banners needed.</p>
                 </div>
-
-                <!-- Mistral Card -->
-                <div class="model-card" id="mistralCard">
-                    <div class="model-header">
-                        <div class="model-badge mistral">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <div>
-                            <h4>Mistral</h4>
-                            <span class="model-role">Source Credibility</span>
-                        </div>
-                        <div class="model-status" id="mistralStatus">
-                            <span class="status-indicator waiting"></span>
-                        </div>
+                <div class="privacy-block">
+                    <div class="privacy-block-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16M4 20L20 4"/></svg>
                     </div>
-                    <div class="model-body" id="mistralBody">
-                        <div class="model-placeholder">Waiting for input...</div>
-                    </div>
-                </div>
-
-                <!-- Nemotron Card -->
-                <div class="model-card" id="nemotronCard">
-                    <div class="model-header">
-                        <div class="model-badge nemotron">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </div>
-                        <div>
-                            <h4>Nemotron</h4>
-                            <span class="model-role">Bias Detection</span>
-                        </div>
-                        <div class="model-status" id="nemotronStatus">
-                            <span class="status-indicator waiting"></span>
-                        </div>
-                    </div>
-                    <div class="model-body" id="nemotronBody">
-                        <div class="model-placeholder">Waiting for input...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Google Sources -->
-            <div class="sources-card" id="sourcesCard">
-                <div class="sources-header">
-                    <div class="sources-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-                    </div>
-                    <div>
-                        <h4>Web Sources</h4>
-                        <span>Google Search corroboration</span>
-                    </div>
-                    <div class="model-status" id="googleStatus">
-                        <span class="status-indicator waiting"></span>
-                    </div>
-                </div>
-                <div class="sources-body" id="sourcesBody">
-                    <div class="model-placeholder">Waiting for input...</div>
+                    <h4>AI-Generated Content Disclaimer</h4>
+                    <p>All verdicts are AI-generated and provided for informational purposes only. Always cross-reference critical information with official, primary sources.</p>
                 </div>
             </div>
         </div>
@@ -338,19 +672,66 @@
                 </div>
                 <span>Verif<span class="brand-accent">AI</span></span>
             </div>
-            <p class="footer-text">Powered by NVIDIA NIM AI Models & Google Search</p>
+            <div class="footer-links">
+                <a href="#about">About Us</a>
+                <a href="#privacy">Privacy Policy</a>
+                <a href="updates.html">Live Updates</a>
+                <a href="auth.html">Sign Up</a>
+            </div>
+            <p class="footer-text">Powered by NVIDIA NIM AI Models &amp; Google Search</p>
             <p class="footer-disclaimer">⚠️ AI-generated analysis. Always verify critical information through official sources.</p>
         </div>
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="shader.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js"></script>
+    <script>
+    // --- Scroll Reveals ---
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('active');
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal, .text-reveal').forEach(el => revealObserver.observe(el));
+
+    // Initial hero reveal
+    setTimeout(() => {
+        document.querySelectorAll('#home .reveal').forEach(el => el.classList.add('active'));
+    }, 100);
+
+    // Navbar scroll
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Mouse tracking
+    document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+        document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+    });
+
+    // Magnetic buttons
+    document.querySelectorAll('.magnetic').forEach(el => {
+        el.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            this.style.transform = `translate(${x * 0.2}px, ${y * 0.3}px)`;
+        });
+        el.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+        });
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = document.querySelector(a.getAttribute('href'));
+            if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+        });
+    });
+    </script>
 </body>
 </html>

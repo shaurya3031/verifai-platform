@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verif-AI — Verify news claims using 3 AI models. Your personal fact-checking workspace.">
+    <title>Verif-AI — Verification Workspace</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== Verification Page Layout ===== */
+        body { overflow-x: hidden; }
+
+        .verify-page-wrapper {
+            display: flex;
+            min-height: 100vh;
+            padding-top: 72px;
+        }
+
+        /* ===== Sidebar ===== */
+        .history-sidebar {
+            width: 320px;
+            min-width: 320px;
+            height: calc(100vh - 72px);
+            position: fixed;
+            top: 72px;
+            left: 0;
+            background: rgba(8, 11, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-card);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 100;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .history-sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid var(--border-card);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-title svg {
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-badge {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .sidebar-collapse-btn {
+            background: none;
+            border: 1px solid var(--border-card);
+            color: var(--text-muted);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-base);
+            flex-shrink: 0;
+        }
+
+        .sidebar-collapse-btn:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .sidebar-search {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-card);
+            flex-shrink: 0;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 9px 14px 9px 36px;
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 0.82rem;
+            outline: none;
+            transition: var(--transition-base);
+        }
+
+        .sidebar-search input:focus {
+            border-color: var(--accent-cyan);
+            background: rgba(56,189,248,0.04);
+        }
+
+        .sidebar-search-wrap {
+            position: relative;
+        }
+
+        .sidebar-search-wrap svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-list::-webkit-scrollbar { width: 4px; }
+        .sidebar-list::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        .history-item-card {
+            background: rgba(17,24,39,0.5);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 14px 14px 12px;
+            cursor: pointer;
+            transition: var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .history-item-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--gradient-main);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .history-item-card:hover {
+            background: rgba(31,41,55,0.7);
+            border-color: rgba(56,189,248,0.25);
+            transform: translateX(3px);
+        }
+
+        .history-item-card:hover::before {
+            opacity: 1;
+        }
+
+        .history-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .history-item-claim {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-verdict-pill {
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .history-verdict-pill.true { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+        .history-verdict-pill.false { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .history-verdict-pill.mixed { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+        .history-verdict-pill.unknown { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+
+        .history-item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .history-confidence-bar {
+            height: 3px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 9999px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .history-confidence-fill {
+            height: 100%;
+            background: var(--gradient-main);
+            border-radius: 9999px;
+            transition: width 0.8s ease;
+        }
+
+        .sidebar-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            gap: 12px;
+        }
+
+        .sidebar-empty svg { opacity: 0.4; }
+        .sidebar-empty p { font-size: 0.82rem; line-height: 1.5; }
+
+        .sidebar-toggle-fab {
+            position: fixed;
+            top: 88px;
+            left: 328px;
+            z-index: 200;
+            width: 32px;
+            height: 56px;
+            background: rgba(8,11,26,0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-card);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.3s, left 0.4s cubic-bezier(0.23, 1, 0.32, 1), background 0.3s;
+        }
+
+        .sidebar-toggle-fab:hover {
+            color: var(--accent-cyan);
+            background: rgba(56,189,248,0.08);
+        }
+
+        .sidebar-toggle-fab.sidebar-hidden {
+            left: 40px;
+        }
+
+        /* ===== Main Content Area ===== */
+        .verify-main {
+            margin-left: 320px;
+            flex: 1;
+            min-width: 0;
+            padding: 40px 48px 80px;
+            transition: margin-left 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .verify-main.sidebar-collapsed {
+            margin-left: 40px;
+        }
+
+        .verify-page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 36px;
+        }
+
+        .verify-page-title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .verify-page-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .server-status-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            color: var(--accent-emerald);
+            transition: all 0.3s;
+        }
+
+        .server-status-chip.offline {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        /* Responsive sidebar */
+        @media (max-width: 900px) {
+            .history-sidebar {
+                transform: translateX(-320px);
+            }
+            .history-sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .verify-main {
+                margin-left: 0;
+                padding: 24px 20px 60px;
+            }
+            .sidebar-toggle-fab { left: 10px; }
+            .sidebar-toggle-fab.sidebar-hidden { left: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="shader-container"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M32 4L8 16v16c0 14.4 10.24 27.84 24 32 13.76-4.16 24-17.6 24-32V16L32 4z" fill="url(#navGrad)" opacity="0.9"/>
+                    <path d="M28 38l-8-8 3-3 5 5 13-13 3 3L28 38z" fill="white"/>
+                    <defs>
+                        <linearGradient id="navGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00d4ff"/>
+                            <stop offset="1" stop-color="#7c3aed"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <span class="brand-name">Verif-<span class="brand-accent">AI</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="updates.html" class="nav-link">Live Updates</a>
+            <div id="serverStatus" class="status-indicator offline" style="width:auto;height:auto;border-radius:9999px;padding:6px 14px;font-size:0.78rem;display:flex;align-items:center;gap:6px;">Checking...</div>
+        </div>
+        <div id="userProfile" class="user-profile-nav" style="display: none;">
+            <span id="userEmailDisplay" class="user-email-chip"></span>
+            <button id="logoutBtn" class="logout-link" onclick="window.handleLogout()">Logout</button>
+        </div>
+        <div id="navLoadingChip" class="nav-status" style="display:flex;">
+            <div class="status-dot"></div>
+            <span>Loading...</span>
+        </div>
+    </nav>
+
+    <!-- Sidebar Toggle FAB -->
+    <button class="sidebar-toggle-fab" id="sidebarToggleBtn" title="Toggle history sidebar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M9 18l6-6-6-6"/>
+        </svg>
+    </button>
+
+    <div class="verify-page-wrapper">
+        <!-- History Sidebar -->
+        <aside class="history-sidebar" id="historySidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    My History
+                    <span class="sidebar-badge" id="historyCountBadge">0</span>
+                </div>
+                <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="sidebar-search">
+                <div class="sidebar-search-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" id="historySearchInput" placeholder="Search past verifications...">
+                </div>
+            </div>
+
+            <div class="sidebar-list" id="historyListSidebar">
+                <!-- History items injected here -->
+                <div class="sidebar-empty" id="historyEmptyState">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+                    </svg>
+                    <p>No verifications yet.<br>Verify your first claim!</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Verification Workspace -->
+        <main class="verify-main" id="verifyMain">
+            <div class="verify-page-header">
+                <div>
+                    <h1 class="verify-page-title">Verification <span class="gradient-text">Workspace</span></h1>
+                    <p class="verify-page-subtitle">Paste any news headline or claim and let 3 AI models analyze it.</p>
+                </div>
+                <div id="serverStatusMain" class="server-status-chip">
+                    <div class="status-dot"></div>
+                    <span>3 AI Models Online</span>
+                </div>
+            </div>
+
+            <!-- Verify Input -->
+            <section class="verify-section" id="verify" style="padding: 0; max-width: 100%;">
+                <div class="verify-input-container">
+                    <div class="input-card glass">
+                        <div class="input-header">
+                            <div class="input-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            </div>
+                            <span>Enter news headline or claim to verify</span>
+                        </div>
+                        <div id="referenceChipContainer" class="reference-chip-container"></div>
+                        <textarea id="claimInput" placeholder="Example: &quot;Scientists discover new species of deep-sea fish that produces its own light&quot;" rows="4"></textarea>
+                        <div class="input-footer">
+                            <div class="input-actions-left">
+                                <label for="fileUpload" class="file-upload-btn magnetic" title="Add reference file">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.82-2.82l8.49-8.48"/></svg>
+                                </label>
+                                <input type="file" id="fileUpload" class="hidden" accept="image/*,application/pdf">
+                                <div class="char-count"><span id="charCount">0</span> / 1000</div>
+                            </div>
+                            <button id="verifyBtn" class="verify-btn magnetic" disabled>
+                                <span class="btn-text">Verify Claim</span>
+                                <span class="btn-loader">
+                                    <span class="loader-dot"></span>
+                                    <span class="loader-dot"></span>
+                                    <span class="loader-dot"></span>
+                                </span>
+                                <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Area -->
+                <div id="resultsArea" class="results-area hidden">
+                    <div class="results-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: var(--text-primary);">Verification Analysis</h3>
+                        <button id="createReportBtn" class="hero-cta" style="padding: 10px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; margin-left: auto; border: none; border-radius: var(--radius-md);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span>Create Analyzed Report</span>
+                        </button>
+                    </div>
+
+                    <!-- Trust Score -->
+                    <div class="trust-score-card" id="trustScoreCard">
+                        <div class="trust-gauge">
+                            <svg viewBox="0 0 200 200" class="gauge-svg">
+                                <circle cx="100" cy="100" r="85" class="gauge-bg"/>
+                                <circle cx="100" cy="100" r="85" class="gauge-fill" id="gaugeFill"/>
+                            </svg>
+                            <div class="gauge-value">
+                                <span class="gauge-number" id="gaugeNumber">0</span>
+                                <span class="gauge-label">Trust Score</span>
+                            </div>
+                        </div>
+                        <div class="trust-info">
+                            <h3 id="verdictLabel">Analyzing...</h3>
+                            <p id="verdictSummary">Processing your claim through multiple AI models...</p>
+                            <div class="verdict-tags" id="verdictTags"></div>
+                        </div>
+                    </div>
+
+                    <!-- AI Model Cards -->
+                    <div class="models-grid">
+                        <div class="model-card" id="llamaCard">
+                            <div class="model-header">
+                                <div class="model-badge llama">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                                </div>
+                                <div>
+                                    <h4>Llama 3.1</h4>
+                                    <span class="model-role">Fact Analysis</span>
+                                </div>
+                                <div class="model-status" id="llamaStatus"><span class="status-indicator waiting"></span></div>
+                            </div>
+                            <div class="model-body" id="llamaBody"><div class="model-placeholder">Waiting for input...</div></div>
+                        </div>
+
+                        <div class="model-card" id="mistralCard">
+                            <div class="model-header">
+                                <div class="model-badge mistral">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <div>
+                                    <h4>Mistral</h4>
+                                    <span class="model-role">Source Credibility</span>
+                                </div>
+                                <div class="model-status" id="mistralStatus"><span class="status-indicator waiting"></span></div>
+                            </div>
+                            <div class="model-body" id="mistralBody"><div class="model-placeholder">Waiting for input...</div></div>
+                        </div>
+
+                        <div class="model-card" id="nemotronCard">
+                            <div class="model-header">
+                                <div class="model-badge nemotron">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </div>
+                                <div>
+                                    <h4>Nemotron</h4>
+                                    <span class="model-role">Bias Detection</span>
+                                </div>
+                                <div class="model-status" id="nemotronStatus"><span class="status-indicator waiting"></span></div>
+                            </div>
+                            <div class="model-body" id="nemotronBody"><div class="model-placeholder">Waiting for input...</div></div>
+                        </div>
+
+                        <!-- Google Sources -->
+                        <div class="sources-card model-card" id="sourcesCard">
+                            <div class="model-header sources-header">
+                                <div class="sources-icon model-badge" style="background:rgba(66,133,244,0.12);color:#4285F4;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                                </div>
+                                <div>
+                                    <h4>Web Sources</h4>
+                                    <span class="model-role">Google Search corroboration</span>
+                                </div>
+                                <div class="model-status" id="googleStatus"><span class="status-indicator waiting"></span></div>
+                            </div>
+                            <div class="sources-body model-body" id="sourcesBody"><div class="model-placeholder">Waiting for input...</div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="shader.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+    <script>
+    // ===== Sidebar Toggle Logic =====
+    const sidebar = document.getElementById('historySidebar');
+    const verifyMain = document.getElementById('verifyMain');
+    const toggleFab = document.getElementById('sidebarToggleBtn');
+    const collapseBtn = document.getElementById('sidebarCollapseBtn');
+    const fabIcon = toggleFab.querySelector('svg path');
+
+    let sidebarOpen = true;
+
+    function setSidebarState(open) {
+        sidebarOpen = open;
+        if (open) {
+            sidebar.classList.remove('collapsed');
+            verifyMain.classList.remove('sidebar-collapsed');
+            toggleFab.classList.remove('sidebar-hidden');
+            toggleFab.style.left = '328px';
+            fabIcon.setAttribute('d', 'M15 18l-6-6 6-6'); // chevron left
+            collapseBtn.querySelector('path').setAttribute('d', 'M15 18l-6-6 6-6');
+        } else {
+            sidebar.classList.add('collapsed');
+            verifyMain.classList.add('sidebar-collapsed');
+            toggleFab.classList.add('sidebar-hidden');
+            toggleFab.style.left = '40px';
+            fabIcon.setAttribute('d', 'M9 18l6-6-6-6'); // chevron right
+        }
+    }
+
+    toggleFab.addEventListener('click', () => setSidebarState(!sidebarOpen));
+    collapseBtn.addEventListener('click', () => setSidebarState(false));
+
+    // ===== History Search Filter =====
+    document.getElementById('historySearchInput').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.history-item-card').forEach(card => {
+            const text = card.querySelector('.history-item-claim').textContent.toLowerCase();
+            card.style.display = text.includes(q) ? '' : 'none';
+        });
+    });
+
+    // ===== Sidebar History Rendering (hook into app.js fetchUserHistory) =====
+    window.renderSidebarHistory = function(history) {
+        const list = document.getElementById('historyListSidebar');
+        const badge = document.getElementById('historyCountBadge');
+        const emptyState = document.getElementById('historyEmptyState');
+
+        badge.textContent = history.length;
+
+        if (!history.length) {
+            emptyState.style.display = 'flex';
+            return;
+        }
+        emptyState.style.display = 'none';
+
+        const cards = history.map(item => {
+            const verdict = (item.verdict || 'unknown').toLowerCase();
+            const verdictClass = verdict === 'true' ? 'true' : verdict === 'false' ? 'false' :
+                                 (verdict === 'partially true' || verdict === 'mixed') ? 'mixed' : 'unknown';
+            const verdictText = (item.verdict || 'Unknown').toUpperCase();
+            const confidence = item.confidence || 0;
+            const date = new Date(item.date || item.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+            const claim = item.claim_id ? item.claim_id.replace(/-/g, ' ') : 'Unknown claim';
+
+            return `
+                <div class="history-item-card" onclick="loadClaimFromHistory('${claim.replace(/'/g,"\\'")}')">
+                    <div class="history-item-top">
+                        <div class="history-item-claim">${claim}</div>
+                        <span class="history-verdict-pill ${verdictClass}">${verdictText}</span>
+                    </div>
+                    <div class="history-item-meta">
+                        <span>${item.model || 'AI'}</span>
+                        <span>${date}</span>
+                    </div>
+                    <div class="history-confidence-bar">
+                        <div class="history-confidence-fill" style="width:${confidence}%"></div>
+                    </div>
+                </div>`;
+        }).join('');
+
+        // Prepend cards before empty state or replace
+        list.innerHTML = cards;
+        list.appendChild(emptyState);
+    };
+
+    // Allow clicking history to reload into textarea
+    window.loadClaimFromHistory = function(claim) {
+        const input = document.getElementById('claimInput');
+        const charCount = document.getElementById('charCount');
+        const verifyBtn = document.getElementById('verifyBtn');
+        if (input) {
+            input.value = claim;
+            charCount.textContent = claim.length;
+            verifyBtn.disabled = claim.length < 10;
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            input.focus();
+        }
+    };
+    </script>
+</body>
+</html>

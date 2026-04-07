@@ -1680,3 +1680,34 @@ textarea:focus {
 .shimmer-line:last-child {
     width: 70%;
 }
+
+/* ---------- Footer Links (Landing Page) ---------- */
+.footer-links {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 14px 0;
+    flex-wrap: wrap;
+}
+.footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    transition: color 0.25s;
+}
+.footer-links a:hover { color: var(--accent-cyan); }
+
+/* ---------- Server Status Nav Chip (Verification Page) ---------- */
+#serverStatus.online {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: var(--accent-emerald);
+}
+#serverStatus.offline {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: var(--accent-red);
+}
+
+/* ---------- Hidden Utility ---------- */
+.hidden { display: none !important; }

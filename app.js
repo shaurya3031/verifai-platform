@@ -146,27 +146,25 @@ const logoutBtn = document.getElementById('logoutBtn');
 const userHistoryList = document.getElementById('userHistoryList');
 
 let selectedFile = null;
+let selectedFileDataUrl = null; // base64 data URL for vision analysis
 let currentUser = null;
 
-// --- Auth State Monitoring & Gatekeeper ---
-const initAuthGatekeeper = () => {
+
+// --- Auth State Monitoring (Reflect user info only) ---
+const initAuthProfile = () => {
     if (!window.firebase) return;
     
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
-            // User is signed in
             currentUser = user;
             if (userProfile) userProfile.style.display = 'flex';
             if (userEmailDisplay) userEmailDisplay.textContent = user.email;
-            if (logoutBtn) { /* Handled via inline HTML for max reliability */ }
             
-            // Fetch personalized history
+            const navLoadingChip = document.getElementById('navLoadingChip');
+            if (navLoadingChip) navLoadingChip.style.display = 'none';
+            
             fetchUserHistory(user.email);
-            console.log('👤 User active:', user.email);
-        } else {
-            // User is signed out -> Redirect to Auth
-            console.log('🔒 Access Denied: Redirecting to Auth Page');
-            window.location.href = 'auth.html';
+            console.log('👤 Profile Sync:', user.email);
         }
     });
 };
@@ -183,32 +181,37 @@ const fetchUserHistory = async (email) => {
 };
 
 const renderUserHistory = (history) => {
-    if (!userHistoryList) return;
-    
-    if (history.length === 0) {
-        userHistoryList.innerHTML = `
-            <div class="feed-placeholder glass" style="grid-column: 1/-1; padding: 40px; text-align: center;">
-                <p>No recent verifications found for your account.</p>
-            </div>
-        `;
-        return;
+    // Render the main history list (used on old index.html, kept for compatibility)
+    if (userHistoryList) {
+        if (history.length === 0) {
+            userHistoryList.innerHTML = `
+                <div class="feed-placeholder glass" style="grid-column: 1/-1; padding: 40px; text-align: center;">
+                    <p>No recent verifications found for your account.</p>
+                </div>
+            `;
+        } else {
+            userHistoryList.innerHTML = history.map(item => `
+                <div class="history-card glass reveal active">
+                    <div class="card-header">
+                        <span class="card-date">${new Date(item.date).toLocaleDateString()}</span>
+                        <span class="verdict-badge verdict-${(item.verdict || 'unknown').toLowerCase()}">${item.verdict}</span>
+                    </div>
+                    <p class="card-claim">${item.claim_id.replace(/-/g, ' ')}</p>
+                    <div class="card-footer">
+                        <span class="model-tag">${item.model}</span>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${item.confidence}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
     }
 
-    userHistoryList.innerHTML = history.map(item => `
-        <div class="history-card glass reveal active">
-            <div class="card-header">
-                <span class="card-date">${new Date(item.date).toLocaleDateString()}</span>
-                <span class="verdict-badge verdict-${(item.verdict || 'unknown').toLowerCase()}">${item.verdict}</span>
-            </div>
-            <p class="card-claim">${item.claim_id.replace(/-/g, ' ')}</p>
-            <div class="card-footer">
-                <span class="model-tag">${item.model}</span>
-                <div class="confidence-bar">
-                    <div class="confidence-fill" style="width: ${item.confidence}%"></div>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    // Also populate the sidebar (defined in verification.html)
+    if (typeof window.renderSidebarHistory === 'function') {
+        window.renderSidebarHistory(history);
+    }
 };
 
 // --- File Reference Handling ---
@@ -217,19 +220,35 @@ const initFileHandling = () => {
 
     fileUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
-            selectedFile = file;
-            renderFileChip(file.name);
+        if (!file) return;
+        selectedFile = file;
+        selectedFileDataUrl = null;
+
+        // Read image as base64 immediately for vision analysis
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                selectedFileDataUrl = ev.target.result; // data:image/...;base64,...
+                renderFileChip(file.name, true);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            renderFileChip(file.name, false);
         }
     });
 };
 
-const renderFileChip = (filename) => {
+const renderFileChip = (filename, isImage = false) => {
     if (!referenceChipContainer) return;
+    const badge = isImage
+        ? '<span style="font-size:0.65rem;color:var(--accent-cyan);font-weight:700;background:rgba(56,189,248,0.1);padding:2px 6px;border-radius:4px;">Vision AI</span>'
+        : '<span style="font-size:0.65rem;color:var(--text-muted);font-weight:700;">File</span>';
+
     referenceChipContainer.innerHTML = `
         <div class="reference-chip">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.82-2.82l8.49-8.48"/></svg>
-            <span style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${filename}</span>
+            <span style="max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${filename}</span>
+            ${badge}
             <button id="clearFile" title="Remove reference">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
@@ -238,10 +257,12 @@ const renderFileChip = (filename) => {
 
     document.getElementById('clearFile').onclick = () => {
         selectedFile = null;
+        selectedFileDataUrl = null;
         fileUpload.value = '';
         referenceChipContainer.innerHTML = '';
     };
 };
+
 
 // ==========================================
 // 🚀 Advanced Animation Engine
@@ -301,16 +322,18 @@ const initMagneticButtons = () => {
 };
 
 // --- Navbar Scroll Effect ---
-window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 50);
-});
+if (navbar) {
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+}
 
 // --- Initialization Logic ---
 const initApp = () => {
     initScrollReveals();
     initMouseTracking();
     initMagneticButtons();
-    initAuthGatekeeper();
+    initAuthProfile();
     initFileHandling();
     
     // Initial reveal for hero
@@ -326,11 +349,13 @@ document.addEventListener('DOMContentLoaded', initApp);
 // ==========================================
 // Input Handling
 // ==========================================
-claimInput.addEventListener('input', () => {
-    const len = claimInput.value.trim().length;
-    charCount.textContent = len;
-    verifyBtn.disabled = len < 10;
-});
+if (claimInput) {
+    claimInput.addEventListener('input', () => {
+        const len = claimInput.value.trim().length;
+        if (charCount) charCount.textContent = len;
+        if (verifyBtn) verifyBtn.disabled = len < 10;
+    });
+}
 
 // ==========================================
 // NVIDIA NIM API Call
@@ -698,6 +723,9 @@ let lastReportData = null;
 let currentClaimId = null;
 
 async function handleVerify(providedClaimId = null) {
+    // Guard: only run on pages that have the verify form
+    if (!claimInput || !resultsArea || !verifyBtn) return;
+
     const claim = claimInput.value.trim();
     if (!claim || claim.length < 10) return;
 
@@ -766,16 +794,18 @@ async function handleVerify(providedClaimId = null) {
 // ==========================================
 // Event Listeners
 // ==========================================
-verifyBtn.addEventListener('click', handleVerify);
+if (verifyBtn) verifyBtn.addEventListener('click', handleVerify);
 const createReportBtn = document.getElementById('createReportBtn');
 if (createReportBtn) createReportBtn.addEventListener('click', generateAnalyzedReport);
 
 // Allow Ctrl+Enter to submit
-claimInput.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.key === 'Enter' && !verifyBtn.disabled) {
-        handleVerify();
-    }
-});
+if (claimInput) {
+    claimInput.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter' && verifyBtn && !verifyBtn.disabled) {
+            handleVerify();
+        }
+    });
+}
 
 // Smooth scroll for nav links
 document.querySelectorAll('.nav-link').forEach(link => {
@@ -1068,17 +1098,19 @@ async function generateAnalyzedReport() {
 // ==========================================
 // Initialize
 // ==========================================
-createParticles();
+// createParticles was removed — shader.js handles the background
+if (typeof createParticles === 'function') createParticles();
 
 // Check for pending claim from updates.html
 window.addEventListener('load', () => {
     fetchHistory(); 
-    fetchAnalytics(); // Ensure analytics load on fresh visit
-    if (localStorage.getItem('pendingClaim')) {
+    fetchAnalytics();
+    if (claimInput && localStorage.getItem('pendingClaim')) {
         const claim = localStorage.getItem('pendingClaim');
         localStorage.removeItem('pendingClaim');
         claimInput.value = claim;
-        verifyClaim(claim);
+        if (typeof verifyClaim === 'function') verifyClaim(claim);
+        else handleVerify();
     }
 
     checkServerStatus();

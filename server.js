@@ -91,9 +91,10 @@ app.post('/api/nvidia', async (req, res) => {
     }
 
     try {
-        // Create a clean request body for NVIDIA (remove internal metadata)
-        const { claim_id: _, model_name: __, isTrusted: ___, ...nvidiaBody } = req.body;
+        // Create a clean request body for NVIDIA (strip ALL internal metadata fields)
+        const { claim_id: _, model_name: __, isTrusted: ___, user_email: ____, ...nvidiaBody } = req.body;
         
+
         const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
             headers: {

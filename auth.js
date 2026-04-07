@@ -28,20 +28,35 @@ window.handleLogout = async () => {
     try {
         console.log('🚪 Signing out...');
         await auth.signOut();
-        window.location.replace('auth.html'); // Clear history stack for login security
+        window.location.replace('index.html'); // After logout, go to public landing page
     } catch (error) {
         console.error('Logout error:', error);
     }
 };
 
-// --- Auth State Redirect ---
-// Ensure user is logged in for protected pages, and redirect if they are not.
+// --- Auth State Redirect & Diagnostics ---
 auth.onAuthStateChanged((user) => {
-    const isAuthPage = window.location.pathname.endsWith('auth.html');
-    if (user && isAuthPage) {
-        window.location.href = 'index.html';
-    } else if (!user && !isAuthPage) {
-        window.location.href = 'auth.html';
+    const path = window.location.pathname;
+    const hostname = window.location.hostname;
+    
+    // Robust page identification
+    const isAuthPage = path.includes('auth.html');
+    const isVerificationPage = path.includes('verification.html');
+    const isLandingPage = path === '/' || path.endsWith('/') || path.includes('index.html');
+
+    console.log(`[Auth Diagnostic] State Change | User: ${user ? user.email : 'None'} | Page: ${path}`);
+    
+    if (user) {
+        if (isAuthPage) {
+            console.log('🔄 User logged in on Auth Page -> Jumping to Workspace');
+            window.location.href = 'verification.html';
+        }
+        // If on index.html, stay there (it's the official entry)
+    } else {
+        if (isVerificationPage) {
+            console.log('🔒 Logged out on Protected Page -> Redirecting to Auth');
+            window.location.href = 'auth.html';
+        }
     }
 });
 
@@ -85,18 +100,42 @@ const handleAuth = async (e) => {
 
     try {
         if (isLoginMode) {
+            console.log('🔐 Attempting login for:', email);
             await auth.signInWithEmailAndPassword(email, password);
         } else {
+            console.log('📝 Attempting signup for:', email);
             await auth.createUserWithEmailAndPassword(email, password);
         }
         // Trigger On-Demand News Refresh on Backend
         fetch('/api/news/refresh', { method: 'POST' }).catch(e => console.log('Refresh trigger error:', e));
 
-        // Redirect on success
-        window.location.href = 'index.html';
+        // Redirect on success → to the protected verification workspace
+        window.location.href = 'verification.html';
     } catch (error) {
-        console.error('Auth Error:', error.message);
-        alert(`Authentication Failed: ${error.message}`);
+        console.error('Auth Error Code:', error.code);
+        console.error('Auth Error Message:', error.message);
+
+        const errorMap = {
+            'auth/invalid-credential':    { msg: 'Email or password is incorrect. If you haven\'t signed up yet, switch to the Signup tab.', suggest: 'signup' },
+            'auth/user-not-found':        { msg: 'No account with this email. Click Signup to create one.', suggest: 'signup' },
+            'auth/wrong-password':        { msg: 'Incorrect password. Try again or use Forgot Password.', suggest: null },
+            'auth/email-already-in-use':  { msg: 'Account already exists. Switch to the Login tab.', suggest: 'login' },
+            'auth/weak-password':         { msg: 'Password must be at least 6 characters.', suggest: null },
+            'auth/invalid-email':         { msg: 'Please enter a valid email address.', suggest: null },
+            'auth/too-many-requests':     { msg: 'Too many failed attempts. Please wait a few minutes and try again.', suggest: null },
+            'auth/operation-not-allowed': { msg: 'Email/Password sign-in is disabled in Firebase Console. Enable it under Authentication → Sign-in method.', suggest: null },
+            'auth/network-request-failed':{ msg: 'Network error — check your internet connection.', suggest: null },
+        };
+
+        const errInfo = errorMap[error.code] || { msg: error.message, suggest: null };
+        showErrorBanner(errInfo.msg);
+
+        if (errInfo.suggest === 'signup' && isLoginMode) {
+            setTimeout(() => toggleMode(false), 1500);
+        } else if (errInfo.suggest === 'login' && !isLoginMode) {
+            setTimeout(() => toggleMode(true), 1500);
+        }
+
         submitBtn.disabled = false;
         submitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
     }
@@ -110,16 +149,64 @@ const handleGoogleSignIn = async () => {
         // Trigger On-Demand News Refresh on Backend
         fetch('/api/news/refresh', { method: 'POST' }).catch(e => console.log('Refresh trigger error:', e));
 
-        window.location.href = 'index.html';
+        // Redirect to verification workspace
+        window.location.href = 'verification.html';
     } catch (error) {
         console.error('Google Sign-In Error:', error.message);
         alert(`Google Sign-In Failed: ${error.message}`);
     }
 };
 
+// --- Error Banner ---
+const showErrorBanner = (message) => {
+    let banner = document.getElementById('errorBanner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'errorBanner';
+        banner.style.cssText = `
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            color: #fca5a5;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            animation: fadeInScale 0.3s ease;
+        `;
+        authForm.after(banner);
+    }
+    banner.textContent = message;
+    banner.style.display = 'block';
+    setTimeout(() => { if (banner) banner.style.display = 'none'; }, 6000);
+};
+
+// --- Password Reset ---
+const handleForgotPassword = async () => {
+    const email = emailInput.value;
+    if (!email) {
+        showErrorBanner('Enter your email address first, then click Forgot Password.');
+        return;
+    }
+    try {
+        await auth.sendPasswordResetEmail(email);
+        showErrorBanner(`✅ Password reset email sent to ${email}. Check your inbox.`);
+    } catch (error) {
+        showErrorBanner('Could not send reset email: ' + (error.message || 'Unknown error'));
+    }
+};
+
 // --- Listeners ---
 if (authForm) authForm.addEventListener('submit', handleAuth);
 if (googleBtn) googleBtn.addEventListener('click', handleGoogleSignIn);
+
+// Add Forgot Password link dynamically
+const forgotLink = document.createElement('div');
+forgotLink.style.cssText = 'text-align:right; margin-top: -10px; margin-bottom: 16px;';
+forgotLink.innerHTML = `<span id="forgotPasswordLink" style="font-size:0.8rem; color:var(--accent-cyan); cursor:pointer;">Forgot Password?</span>`;
+const passwordGroup = passwordInput?.closest('.form-group');
+if (passwordGroup) passwordGroup.after(forgotLink);
+document.getElementById('forgotPasswordLink')?.addEventListener('click', handleForgotPassword);
 
 // Logout functions are already handled at the top of the file
 
