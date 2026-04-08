@@ -153,16 +153,16 @@ let currentUser = null;
 // --- Auth State Monitoring (Reflect user info only) ---
 const initAuthProfile = () => {
     if (!window.firebase) return;
-    
+
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
             currentUser = user;
             if (userProfile) userProfile.style.display = 'flex';
             if (userEmailDisplay) userEmailDisplay.textContent = user.email;
-            
+
             const navLoadingChip = document.getElementById('navLoadingChip');
             if (navLoadingChip) navLoadingChip.style.display = 'none';
-            
+
             fetchUserHistory(user.email);
             console.log('👤 Profile Sync:', user.email);
         }
@@ -267,16 +267,16 @@ const renderFileChip = (filename, isImage = false) => {
 const autoFillFromUrl = () => {
     const params = new URLSearchParams(window.location.search);
     const claim = params.get('claim') || localStorage.getItem('pendingClaim');
-    
+
     if (claim && claimInput) {
         console.log('📝 Auto-filling claim:', claim);
         claimInput.value = claim;
         charCount.textContent = claim.length;
         verifyBtn.disabled = claim.length < 10;
-        
+
         // Clear storage
         localStorage.removeItem('pendingClaim');
-        
+
         // Scroll to input
         setTimeout(() => {
             claimInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -305,7 +305,7 @@ const initWorkspaceNews = () => {
 
     // Initial load
     loadWorkspaceNews(currentNewsCategory);
-    
+
     // Refresh every 2 minutes
     setInterval(() => loadWorkspaceNews(currentNewsCategory), 120000);
 };
@@ -317,7 +317,7 @@ const loadWorkspaceNews = async (category) => {
     try {
         const res = await fetch(`${BACKEND_URL}/api/news?category=${category}&page=1`);
         const data = await res.json();
-        
+
         if (data.items && data.items.length > 0) {
             renderWorkspaceNews(data.items);
         }
@@ -350,7 +350,7 @@ window.handleVerifyNow = (claim) => {
         verifyBtn.disabled = claim.length < 10;
         claimInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         claimInput.focus();
-        
+
         // Visual feedback
         claimInput.parentElement.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.4)';
         setTimeout(() => {
@@ -398,18 +398,18 @@ const initMouseTracking = () => {
 // --- Magnetic Buttons ---
 const initMagneticButtons = () => {
     const magneticEls = document.querySelectorAll('.magnetic');
-    
+
     magneticEls.forEach(el => {
-        el.addEventListener('mousemove', function(e) {
+        el.addEventListener('mousemove', function (e) {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left - rect.width / 2;
             const y = e.clientY - rect.top - rect.height / 2;
-            
+
             this.style.transform = `translate(${x * 0.3}px, ${y * 0.5}px)`;
             this.style.transition = 'transform 0.1s ease-out';
         });
-        
-        el.addEventListener('mouseleave', function() {
+
+        el.addEventListener('mouseleave', function () {
             this.style.transform = 'translate(0, 0)';
             this.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
         });
@@ -432,7 +432,7 @@ const initApp = () => {
     initFileHandling();
     initWorkspaceNews();
     autoFillFromUrl();
-    
+
     // Initial reveal for hero
     setTimeout(() => {
         const heroReveals = document.querySelectorAll('#home .reveal');
@@ -502,7 +502,7 @@ async function queryNvidiaModel(modelKey, claim) {
         } catch {
             parsed = { analysis: content, confidence: 50 };
         }
-        
+
         // Add cache indicator to parsed data
         if (data.cached) {
             parsed.fromCache = true;
@@ -536,29 +536,25 @@ async function searchGoogle(claim) {
         const url = `${GOOGLE_PROXY_URL}?q=${query}`;
 
         const response = await fetch(url);
+        // Handle 403 gracefully without throwing
         if (response.status === 403) {
-            console.error('❌ Google Search error: 403 Forbidden (Check API key quota/restriction)');
-            throw new Error('Google API quota exceeded or unauthorized.');
+            console.warn('⚠️ Google Search: 403 Forbidden (Quota exceeded)');
+            setStatus(googleStatus, 'error');
+            sourcesBody.innerHTML = `<div class="model-placeholder">Search quota exceeded. Analysis will continue using AI models only.</div>`;
+            return [];
         }
-        if (!response.ok) {
-            throw new Error(`Google API Error: ${response.status}`);
-        }
+
+        if (!response.ok) throw new Error(`Google API Error: ${response.status}`);
 
         const data = await response.json();
         const items = data.items || [];
-
         setStatus(googleStatus, 'done');
         renderSources(items);
         return items;
-
     } catch (error) {
-        console.error('❌ Google Search proxy error:', error.message);
+        console.error('❌ Google Search Error:', error.message);
         setStatus(googleStatus, 'error');
-        sourcesBody.innerHTML = `
-            <div style="color: var(--accent-red); padding: 12px; background: rgba(239,68,68,0.1); border-radius: 8px;">
-                <strong>Search Error:</strong> ${error.message.substring(0, 200)}
-            </div>
-        `;
+        sourcesBody.innerHTML = `<div class="model-placeholder">Web search temporarily unavailable.</div>`;
         return [];
     }
 }
@@ -820,113 +816,51 @@ let lastReportData = null;
 let currentClaimId = null;
 
 async function handleVerify(providedClaimId = null) {
-    // Guard: only run on pages that have the verify form
     if (!claimInput || !resultsArea || !verifyBtn) return;
 
     const claim = claimInput.value.trim();
     if (!claim || claim.length < 10) return;
 
-    // Use provided ID or generate a slug-based ID for custom input
     const cleanClaim = claim.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 50);
-    currentClaimId = providedClaimId || `custom-${cleanClaim}-${getClaimHash(claim)}`;
+    currentClaimId = providedClaimId || `custom-${cleanClaim}-${Date.now()}`;
 
-    // Show results area
     resultsArea.classList.remove('hidden');
     resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // Remove Platform Analytics as requested
-    const analyticsSection = document.getElementById('analytics');
-    if (analyticsSection) {
-        analyticsSection.style.display = 'none';
-    }
-
-    // Reset UI
     verifyBtn.classList.add('loading');
     verifyBtn.disabled = true;
-    gaugeFill.style.strokeDashoffset = 534;
-    gaugeNumber.textContent = '—';
-    verdictLabel.textContent = 'Analyzing...';
-    verdictSummary.textContent = 'Processing your claim through multiple AI models...';
-    verdictTags.innerHTML = '';
+    verdictLabel.textContent = 'Analysing...';
 
-    // Reset model cards
-    Object.values(modelElements).forEach(el => {
-        setModelStatus(el, 'loading');
-        setModelBody(el, createShimmer());
-    });
-    setStatus(googleStatus, 'loading');
-    sourcesBody.innerHTML = createShimmer();
-
-    // Fire all API calls in parallel
+    // Fire all API calls in parallel - wrapped to ensure they don't block each other
     const [llamaResult, mistralResult, nemotronResult, googleResults] = await Promise.all([
-        queryNvidiaModel('llama', claim),
-        queryNvidiaModel('mistral', claim),
-        queryNvidiaModel('nemotron', claim),
-        searchGoogle(claim)
+        queryNvidiaModel('llama', claim).catch(() => ({ confidence: 0, error: true })),
+        queryNvidiaModel('mistral', claim).catch(() => ({ confidence: 0, error: true })),
+        queryNvidiaModel('nemotron', claim).catch(() => ({ confidence: 0, error: true })),
+        searchGoogle(claim).catch(() => [])
     ]);
 
-    // Compute and render final verdict
     const verdict = computeVerdict(
         { llama: llamaResult, mistral: mistralResult, nemotron: nemotronResult },
         googleResults
     );
 
-    // Save for report generation
-    lastReportData = {
-        claim: claim,
-        timestamp: new Date().toISOString(),
-        claim_id: currentClaimId,
-        verdict: verdict,
-        models: { llama: llamaResult, mistral: mistralResult, nemotron: nemotronResult },
-        sources: googleResults
-    };
-
     renderVerdict(verdict);
-
-    // Reset button
     verifyBtn.classList.remove('loading');
     verifyBtn.disabled = false;
+
+    // 🔄 REFRESH HISTORY SIDEBAR IMMEDIATELY
+    if (currentUser && currentUser.email) {
+        setTimeout(() => fetchUserHistory(currentUser.email), 1500);
+    }
 }
 
-// ==========================================
-// Event Listeners
-// ==========================================
-if (verifyBtn) verifyBtn.addEventListener('click', handleVerify);
-const createReportBtn = document.getElementById('createReportBtn');
-if (createReportBtn) createReportBtn.addEventListener('click', generateAnalyzedReport);
-
-// Allow Ctrl+Enter to submit
-if (claimInput) {
-    claimInput.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'Enter' && verifyBtn && !verifyBtn.disabled) {
-            handleVerify();
-        }
-    });
-}
-
-// Smooth scroll for nav links
-document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', function(e) {
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        this.classList.add('active');
-    });
-});
-
-// ==========================================
-// Utilities
-// ==========================================
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
 
 // ==========================================
 // Real-time Socket Handlers
 // ==========================================
 function setupSocketListeners() {
     if (!socket) return;
-    
+
     socket.on('connect', () => {
         console.log('📡 Connected to VerifAI Live Stream');
     });
@@ -966,12 +900,12 @@ function addLiveFeedItem(data) {
         <button class="live-item-verify-btn" onclick="verifyFromFeed('${escapeHtml(data.claim).replace(/'/g, "\\'")}', '${data.id}')">Verify Now</button>
     `;
 
-function verifyFromFeed(claim, claimId) {
-    claimInput.value = claim;
-    charCount.textContent = claim.length;
-    verifyBtn.disabled = false;
-    handleVerify(claimId);
-}
+    function verifyFromFeed(claim, claimId) {
+        claimInput.value = claim;
+        charCount.textContent = claim.length;
+        verifyBtn.disabled = false;
+        handleVerify(claimId);
+    }
 
     liveFeedList.prepend(item);
 
@@ -1004,7 +938,7 @@ async function fetchAnalytics() {
     try {
         const response = await fetch(`${BACKEND_URL}/api/analytics`);
         const stats = await response.json();
-        
+
         if (stats) {
             updateStat('statTotal', stats.totalVerifications);
             updateStat('statConfidence', (stats.averageConfidence || 0) + '%');
@@ -1070,7 +1004,7 @@ async function generateAnalyzedReport() {
     const { jsPDF } = window.jspdf;
     const btn = document.getElementById('createReportBtn');
     const originalText = btn.innerHTML;
-    
+
     btn.innerHTML = 'Creating Report...';
     btn.disabled = true;
 
@@ -1079,47 +1013,47 @@ async function generateAnalyzedReport() {
         const pageWidth = doc.internal.pageSize.getWidth();
         const primaryColor = [0, 212, 255]; // Cyan
         const secondaryColor = [124, 58, 237]; // Purple
-        
+
         // 1. Header & Branding
         doc.setFillColor(2, 6, 23); // Dark background
         doc.rect(0, 0, pageWidth, 40, 'F');
-        
+
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(28);
         doc.setTextColor(255, 255, 255);
         doc.text('Verif', 20, 25);
         doc.setTextColor(...primaryColor);
         doc.text('AI', 45, 25);
-        
+
         doc.setFontSize(10);
         doc.setTextColor(150, 150, 150);
         doc.text('PROFESSIONAL VERIFICATION REPORT', pageWidth - 85, 25);
-        
+
         // 2. Claim Section
         doc.setFontSize(12);
         doc.setTextColor(100, 100, 100);
         doc.text('SUBJECT CLAIM:', 20, 55);
-        
+
         doc.setFontSize(14);
         doc.setTextColor(0, 0, 0);
         const splitClaim = doc.splitTextToSize(lastReportData.claim, pageWidth - 40);
         doc.text(splitClaim, 20, 65);
-        
+
         let y = 65 + (splitClaim.length * 7);
-        
+
         // 3. Verdict Card
         doc.setDrawColor(230, 230, 230);
         doc.setLineWidth(0.5);
         doc.roundedRect(20, y, pageWidth - 40, 35, 3, 3, 'S');
-        
+
         doc.setFontSize(18);
         doc.setTextColor(...(lastReportData.verdict.trustScore >= 70 ? [16, 185, 129] : [239, 68, 68]));
         doc.text(lastReportData.verdict.label, 30, y + 15);
-        
+
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         doc.text(`Trust Score: ${lastReportData.verdict.trustScore}%`, 30, y + 25);
-        
+
         // "Verified" Seal
         doc.setDrawColor(...primaryColor);
         doc.setLineWidth(1);
@@ -1128,7 +1062,7 @@ async function generateAnalyzedReport() {
         doc.setTextColor(...primaryColor);
         doc.text('VERIF AI', pageWidth - 52, y + 16);
         doc.text('CERTIFIED', pageWidth - 53, y + 20);
-        
+
         y += 50;
 
         // 4. Model Analysis
@@ -1140,19 +1074,19 @@ async function generateAnalyzedReport() {
 
         models.forEach(model => {
             if (y > 250) { doc.addPage(); y = 20; }
-            
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...secondaryColor);
             doc.text(model.name, 20, y);
-            
+
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
             doc.setTextColor(50, 50, 50);
             const analysis = (model.data && model.data.analysis) ? model.data.analysis : 'Analysis unavailable.';
             const splitAnalysis = doc.splitTextToSize(analysis, pageWidth - 40);
             doc.text(splitAnalysis, 20, y + 7);
-            
+
             y += 15 + (splitAnalysis.length * 5);
         });
 
@@ -1164,12 +1098,12 @@ async function generateAnalyzedReport() {
             doc.setTextColor(0, 0, 0);
             doc.text('TOP CORROBORATING SOURCES:', 20, y);
             y += 8;
-            
+
             lastReportData.sources.slice(0, 3).forEach((s, i) => {
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
                 doc.setTextColor(...primaryColor);
-                doc.text(`${i+1}. ${s.title.substring(0, 80)}...`, 25, y);
+                doc.text(`${i + 1}. ${s.title.substring(0, 80)}...`, 25, y);
                 y += 5;
             });
         }
@@ -1200,7 +1134,7 @@ if (typeof createParticles === 'function') createParticles();
 
 // Check for pending claim from updates.html
 window.addEventListener('load', () => {
-    fetchHistory(); 
+    fetchHistory();
     fetchAnalytics();
     if (claimInput && localStorage.getItem('pendingClaim')) {
         const claim = localStorage.getItem('pendingClaim');
