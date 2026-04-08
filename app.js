@@ -106,6 +106,15 @@ const AI_MODELS = {
 // ==========================================
 const claimInput = document.getElementById('claimInput');
 const charCount = document.getElementById('charCount');
+
+// --- Utility: Escape HTML ---
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 const verifyBtn = document.getElementById('verifyBtn');
 const resultsArea = document.getElementById('resultsArea');
 const navbar = document.getElementById('navbar');

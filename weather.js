@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchWeather = async (lat, lon) => {
         try {
-            // Determine Backend URL (Auto-detect if running on port 3000 or default to localhost)
-            const BACKEND_URL = window.location.port === '3000' ? '' : 'http://localhost:3000';
+            // Determine Backend URL (Relative for production/Railway compatibility)
+            const BACKEND_URL = ''; 
 
             // 1. Fetch Location Name (via Proxy or Fallback)
             let city = 'Verified Region';
@@ -79,8 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Multi-Route Fetching (Tries Proxy then Direct Fallback)
             let data;
             const fetchRoutes = [
-                `${BACKEND_URL}/api/proxy/weather?lat=${lat}&lon=${lon}`,
-                `http://127.0.0.1:3000/api/proxy/weather?lat=${lat}&lon=${lon}`,
+                `/api/proxy/weather?lat=${lat}&lon=${lon}`,
                 `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto`
             ];
 
