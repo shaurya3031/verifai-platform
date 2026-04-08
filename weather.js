@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const locBtn = document.getElementById('locBtn');
     const permissionState = document.getElementById('permissionState');
     const loadingState = document.getElementById('loadingState');
+    const manualSearchState = document.getElementById('manualSearchState');
+    const citySearchInput = document.getElementById('citySearchInput');
+    const citySearchBtn = document.getElementById('citySearchBtn');
+    const retryLocBtn = document.getElementById('retryLocBtn');
     const dataState = document.getElementById('dataState');
     const forecastSection = document.getElementById('forecastSection');
     const forecastGrid = document.getElementById('forecastGrid');
@@ -151,9 +155,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 diagnosticInfo += '\n- Possible: Server not running or blocked by Firewall.';
             }
             
-            alert('Atmospheric verification failed.' + diagnosticInfo);
+            // alert('Atmospheric verification failed.' + diagnosticInfo); // Swapped for manual fallback
             loadingState.classList.add('hidden');
-            permissionState.classList.remove('hidden');
+            manualSearchState.classList.remove('hidden');
+        }
+    };
+
+    const handleManualSearch = async () => {
+        const query = citySearchInput.value.trim();
+        if (!query) return;
+
+        manualSearchState.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+
+        try {
+            // Use existing geocoding proxy to find coords
+            const BACKEND_URL = window.location.port === '3000' ? '' : 'http://localhost:3000';
+            const searchUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+            
+            const res = await fetch(searchUrl);
+            const data = await res.json();
+
+            if (data && data.length > 0) {
+                const { lat, lon } = data[0];
+                fetchWeather(parseFloat(lat), parseFloat(lon));
+            } else {
+                throw new Error('City not found');
+            }
+        } catch (err) {
+            console.error('❌ Manual Search Error:', err);
+            alert('City not found. Please check spelling or try a larger city nearby.');
+            loadingState.classList.add('hidden');
+            manualSearchState.classList.remove('hidden');
         }
     };
 
@@ -185,9 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             (err) => {
                 console.warn('❌ Geolocation Permission Denied or Timed Out:', err.message);
-                alert('Permission denied or request timed out. Atmospheric verification requires location access.');
                 loadingState.classList.add('hidden');
-                permissionState.classList.remove('hidden');
+                manualSearchState.classList.remove('hidden');
             },
             geoOptions
         );
@@ -256,4 +288,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 
     locBtn.addEventListener('click', handleLocation);
+    citySearchBtn.addEventListener('click', handleManualSearch);
+    citySearchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleManualSearch();
+    });
+    retryLocBtn.addEventListener('click', () => {
+        manualSearchState.classList.add('hidden');
+        handleLocation();
+    });
 });

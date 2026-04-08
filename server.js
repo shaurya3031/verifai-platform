@@ -107,6 +107,12 @@ app.post('/api/nvidia', async (req, res) => {
 
         const data = await response.json();
         
+        // Log unauthorized specifically
+        if (response.status === 401) {
+            console.error('❌ NVIDIA API error: 401 Unauthorized (Check API key)');
+            return res.status(401).json({ error: 'NVIDIA API Key is invalid or unauthorized.' });
+        }
+
         // Save to Cache if successful
         if (response.ok && claim_id && model_name && data.choices && data.choices[0]) {
             const content = data.choices[0].message.content;
@@ -123,7 +129,7 @@ app.post('/api/nvidia', async (req, res) => {
         res.status(response.status).json(data);
     } catch (error) {
         console.error('NVIDIA API proxy error:', error.message);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Internal Server Error: ' + error.message });
     }
 });
 

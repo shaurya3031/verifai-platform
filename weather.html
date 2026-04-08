@@ -321,6 +321,20 @@
                 <p style="margin-top: 20px;">Fetching global atmospheric data...</p>
             </div>
 
+            <!-- Manual Search Fallback -->
+            <div id="manualSearchState" class="permission-overlay hidden">
+                <div class="permission-icon" style="animation: none; background: rgba(129, 140, 248, 0.1); color: var(--accent-purple);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                </div>
+                <h3>Atmospheric Search</h3>
+                <p>Location denied. Please enter your city manually to verify the atmosphere.</p>
+                <div style="width: 100%; max-width: 400px; margin-top: 24px; position: relative;">
+                    <input type="text" id="citySearchInput" placeholder="Enter city name (e.g. Mumbai, London)" style="width: 100%; padding: 14px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-card); border-radius: var(--radius-md); color: white; outline: none; font-family: inherit;">
+                    <button id="citySearchBtn" class="hero-cta" style="width: 100%; margin-top: 12px; padding: 12px; border-radius: var(--radius-md); font-size: 0.95rem;">Verify This Region</button>
+                    <button class="nav-link" id="retryLocBtn" style="margin-top: 15px; font-size: 0.8rem; opacity: 0.7; background: none; border: none; cursor: pointer;">Retry Automatic Location</button>
+                </div>
+            </div>
+
             <!-- Data State -->
             <div id="dataState" class="hidden" style="display: contents;">
                 <div class="weather-loc-info">
