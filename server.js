@@ -23,9 +23,9 @@ let lastFetchTime = 0;
 const FETCH_THROTTLE = 10 * 60 * 1000; // 10 minutes (to avoid spamming Google News)
 
 const PORT = process.env.PORT || 3000;
-const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-const GOOGLE_CX = process.env.GOOGLE_CX;
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY ? process.env.NVIDIA_API_KEY.trim() : null;
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY ? process.env.GOOGLE_API_KEY.trim() : null;
+const GOOGLE_CX = process.env.GOOGLE_CX ? process.env.GOOGLE_CX.trim() : null;
 
 // --- Environment Validation ---
 const REQUIRED_ENV = ['NVIDIA_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_CX'];
@@ -49,14 +49,14 @@ app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like local files or curl)
         if (!origin) return callback(null, true);
-        
+
         // Allow any localhost, 127.0.0.1, or common local ports (covers Live Server 5500/5501)
         const allowedPorts = [':3000', ':5500', ':5501', ':8080'];
         const allowedDomains = ['localhost', '127.0.0.1', 'render.com', 'railway.app'];
-        const isAllowed = allowedDomains.some(d => origin.includes(d)) || 
-                          allowedPorts.some(p => origin.includes(p)) ||
-                          origin.includes('127.0.0.1');
-        
+        const isAllowed = allowedDomains.some(d => origin.includes(d)) ||
+            allowedPorts.some(p => origin.includes(p)) ||
+            origin.includes('127.0.0.1');
+
         if (isAllowed) {
             return callback(null, true);
         }
@@ -72,14 +72,14 @@ app.use(express.static(path.join(__dirname)));
 // ==========================================
 app.post('/api/nvidia', async (req, res) => {
     const { claim_id, model_name } = req.body;
-    
+
     // Check Cache
     if (claim_id && model_name) {
         try {
             const cached = await db.getVerification(claim_id, model_name);
             if (cached) {
                 console.log(`🎯 Cache Hit: ${claim_id} (${model_name})`);
-                return res.json({ 
+                return res.json({
                     choices: [{ message: { content: cached.explanation } }],
                     cached: true,
                     verdict: cached.verdict,
@@ -94,7 +94,7 @@ app.post('/api/nvidia', async (req, res) => {
     try {
         // Create a clean request body for NVIDIA (strip ALL internal metadata fields)
         const { claim_id: _, model_name: __, isTrusted: ___, user_email: ____, ...nvidiaBody } = req.body;
-        
+
 
         const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
@@ -106,7 +106,7 @@ app.post('/api/nvidia', async (req, res) => {
         });
 
         const data = await response.json();
-        
+
         // Log unauthorized specifically
         if (response.status === 401) {
             console.error('❌ NVIDIA API error: 401 Unauthorized (Check API key)');
@@ -163,14 +163,14 @@ app.get('/api/google-search', async (req, res) => {
 // ==========================================
 async function fetchLatestNewsAndVerify() {
     console.log('🔄 Cron: Fetching latest global news from Google News parser...');
-    
+
     try {
         const feed = await parser.parseURL('https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en');
-        
+
         if (feed.items && feed.items.length > 0) {
             // Find ALL ones that haven't been broadcasted
             const newMatches = feed.items.slice(0, 10).filter(item => !lastBroadcastedTitles.has(item.title));
-            
+
             newMatches.forEach(item => {
                 lastBroadcastedTitles.add(item.title);
                 if (lastBroadcastedTitles.size > MAX_HISTORY) {
@@ -186,10 +186,10 @@ async function fetchLatestNewsAndVerify() {
                     source: (typeof item.source === 'object') ? item.source._ : (item.source || 'News'),
                     category: 'world'
                 };
-                
+
                 // Save to Database
                 db.saveNewsItem(claimData).catch(e => console.error('DB News Save error:', e.message));
-                
+
                 recentClaims.unshift(claimData);
                 if (recentClaims.length > 10) recentClaims.pop();
 
@@ -212,7 +212,7 @@ cron.schedule('*/1 * * * *', () => {
 // Socket.io Connection
 io.on('connection', (socket) => {
     console.log(`🔌 New client connected: ${socket.id} (Syncing ${recentClaims.length} claims)`);
-    
+
     // Auto-refresh news on lands if stale
     const now = Date.now();
     if (now - lastFetchTime > FETCH_THROTTLE) {
@@ -247,7 +247,7 @@ app.get('/api/news', async (req, res) => {
 
     try {
         const feed = await parser.parseURL(feedUrl);
-        
+
         const allItems = feed.items.map(item => ({
             title: item.title,
             description: item.contentSnippet || item.content,
@@ -387,7 +387,7 @@ app.get('/api/proxy/weather', async (req, res) => {
         console.log(`🌦️ [Source B] Fetching scientific 7-day backup...`);
         const urlB = `http://www.7timer.info/bin/api.pl?lon=${lon}&lat=${lat}&product=civil&output=json`;
         const responseB = await axios.get(urlB, { timeout: 8000 });
-        
+
         const forecast = responseB.data.dataseries;
         const normalizedDataB = {
             current: {
@@ -398,15 +398,15 @@ app.get('/api/proxy/weather', async (req, res) => {
                 uv_index: 5
             },
             daily: {
-                time: Array.from({length: 7}, (_, i) => {
+                time: Array.from({ length: 7 }, (_, i) => {
                     const d = new Date();
                     d.setDate(d.getDate() + i);
                     return d.toISOString().split('T')[0];
                 }),
-                weather_code: Array.from({length: 7}, () => 0),
-                temperature_2m_max: Array.from({length: 7}, (_, i) => forecast[i*8]?.temp2m || 30),
-                temperature_2m_min: Array.from({length: 7}, (_, i) => (forecast[i*8]?.temp2m || 30) - 5),
-                uv_index_max: Array.from({length: 7}, () => 5)
+                weather_code: Array.from({ length: 7 }, () => 0),
+                temperature_2m_max: Array.from({ length: 7 }, (_, i) => forecast[i * 8]?.temp2m || 30),
+                temperature_2m_min: Array.from({ length: 7 }, (_, i) => (forecast[i * 8]?.temp2m || 30) - 5),
+                uv_index_max: Array.from({ length: 7 }, () => 5)
             },
             source: 'backup-7timer'
         };
@@ -420,7 +420,7 @@ app.get('/api/proxy/weather', async (req, res) => {
         console.log(`🌦️ [Source C] Fetching emergency backup weather...`);
         const urlC = `https://wttr.in/${lat},${lon}?format=j1`;
         const responseC = await axios.get(urlC, { timeout: 8000 });
-        
+
         const currentData = responseC.data.current_condition[0];
         const normalizedDataC = {
             current: {
@@ -449,26 +449,26 @@ app.get('/api/proxy/weather', async (req, res) => {
 app.get('/api/proxy/location', async (req, res) => {
     try {
         const { lat, lon } = req.query;
-        
+
         // --- Strategy 1: Google Geocoding (Professional & Reliable) ---
         if (process.env.GOOGLE_API_KEY) {
             console.log(`📍 [Google] Resolving location: ${lat}, ${lon}`);
             const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${process.env.GOOGLE_API_KEY}`;
             const gRes = await axios.get(googleUrl, { timeout: 5000 });
-            
+
             if (gRes.data.status === 'OK' && gRes.data.results.length > 0) {
                 const ac = gRes.data.results[0].address_components;
                 // Aggressive search for any city-like name
-                const city = ac.find(c => c.types.includes('locality'))?.long_name || 
-                             ac.find(c => c.types.includes('sublocality_level_1'))?.long_name ||
-                             ac.find(c => c.types.includes('administrative_area_level_2'))?.long_name ||
-                             ac.find(c => c.types.includes('neighborhood'))?.long_name ||
-                             ac.find(c => c.types.includes('postal_town'))?.long_name || 'Your Region';
-                             
+                const city = ac.find(c => c.types.includes('locality'))?.long_name ||
+                    ac.find(c => c.types.includes('sublocality_level_1'))?.long_name ||
+                    ac.find(c => c.types.includes('administrative_area_level_2'))?.long_name ||
+                    ac.find(c => c.types.includes('neighborhood'))?.long_name ||
+                    ac.find(c => c.types.includes('postal_town'))?.long_name || 'Your Region';
+
                 const country = ac.find(c => c.types.includes('country'))?.long_name || 'India';
-                
+
                 console.log(`✅ [Google] Resolved: ${city}, ${country}`);
-                return res.json({ 
+                return res.json({
                     address: { city, country },
                     display_name: gRes.data.results[0].formatted_address
                 });
@@ -485,7 +485,7 @@ app.get('/api/proxy/location', async (req, res) => {
         res.json(response.data);
     } catch (err) {
         console.warn('⚠️ Location Lookup failed, using generic fallback.', err.message);
-        res.json({ 
+        res.json({
             address: { city: 'Verified', country: 'Region' },
             display_name: 'Your Current Region'
         });
@@ -497,7 +497,7 @@ const server = http.listen(PORT, '0.0.0.0', async () => {
     await db.initDatabase().catch(e => console.error('DB Init error:', e.message));
     const interfaces = os.networkInterfaces();
     let localIp = 'localhost';
-    
+
     // Find the real local IP (e.g., 192.168.x.x)
     for (const devName in interfaces) {
         for (const iface of interfaces[devName]) {
@@ -517,7 +517,7 @@ const server = http.listen(PORT, '0.0.0.0', async () => {
     console.log(`  🤖  3 AI Models ready (Llama 3.1, Mistral, Nemotron)`);
     console.log(`  🔑  NVIDIA API Key: ${process.env.NVIDIA_API_KEY ? '✓ configured' : '✗ missing'}`);
     console.log(`  🔑  Google API Key: ${process.env.GOOGLE_API_KEY ? '✓ configured' : '✗ missing'}`);
-    
+
     // Initial fetch to populate news immediately
     await fetchLatestNewsAndVerify().catch(e => console.error('Initial Fetch error:', e.message));
 
