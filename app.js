@@ -363,16 +363,23 @@ const renderWorkspaceNews = (items) => {
 window.handleVerifyNow = (claim) => {
     if (claimInput) {
         claimInput.value = claim;
-        charCount.textContent = claim.length;
-        verifyBtn.disabled = claim.length < 10;
+        if (charCount) charCount.textContent = claim.length;
+        if (verifyBtn) verifyBtn.disabled = claim.length < 10;
+        
+        // Scroll to input
         claimInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         claimInput.focus();
 
         // Visual feedback
         claimInput.parentElement.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.4)';
         setTimeout(() => {
-            claimInput.parentElement.style.boxShadow = '';
+            if (claimInput.parentElement) claimInput.parentElement.style.boxShadow = '';
         }, 1200);
+
+        // TRIGGER VERIFICATION AUTOMATICALLY
+        if (claim.length >= 10) {
+            handleVerify();
+        }
     }
 };
 
@@ -440,20 +447,88 @@ if (navbar) {
     });
 }
 
+// --- Event Listeners Engine ---
+const initEventListeners = () => {
+    // 1. Main Verification Trigger
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', () => {
+            if (!verifyBtn.disabled) handleVerify();
+        });
+    }
+
+    // 2. Keyboard Support (Enter to Verify)
+    if (claimInput) {
+        claimInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const len = claimInput.value.trim().length;
+                if (len >= 10) handleVerify();
+            }
+        });
+    }
+
+    // 3. Sidebar Toggles
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const newsToggleBtn = document.getElementById('newsToggleBtn');
+    const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+    const historySidebar = document.getElementById('historySidebar');
+    const liveUpdatesSidebar = document.getElementById('liveUpdatesSidebar');
+
+    if (sidebarToggleBtn && historySidebar) {
+        sidebarToggleBtn.addEventListener('click', () => {
+            historySidebar.classList.toggle('collapsed');
+        });
+    }
+
+    if (newsToggleBtn && liveUpdatesSidebar) {
+        newsToggleBtn.addEventListener('click', () => {
+            liveUpdatesSidebar.classList.toggle('collapsed');
+        });
+    }
+
+    if (sidebarCollapseBtn && historySidebar) {
+        sidebarCollapseBtn.addEventListener('click', () => {
+            historySidebar.classList.add('collapsed');
+        });
+    }
+
+    // 4. Report Generation
+    const createReportBtn = document.getElementById('createReportBtn');
+    if (createReportBtn) {
+        createReportBtn.addEventListener('click', generateProfessionalReport);
+    }
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', generateProfessionalReport);
+    }
+};
+
 // --- Initialization Logic ---
 const initApp = () => {
-    initScrollReveals();
-    initMouseTracking();
-    initMagneticButtons();
-    initAuthProfile();
-    initFileHandling();
-    initWorkspaceNews();
-    autoFillFromUrl();
+    console.log('🚀 Initializing VerifAI Workspace...');
+    
+    // 1. CRITICAL: Initialize Event Listeners First
+    try {
+        initEventListeners();
+        console.log('✅ Interactions active');
+    } catch (e) {
+        console.error('❌ Interaction Init Failed:', e);
+    }
+    
+    // 2. Secondary Modules (Wrapped in safety blocks)
+    try { initScrollReveals(); } catch (e) { console.warn('Scroll reveals init failed'); }
+    try { initMouseTracking(); } catch (e) { console.warn('Mouse tracking init failed'); }
+    try { initMagneticButtons(); } catch (e) { console.warn('Magnetic buttons init failed'); }
+    try { initAuthProfile(); } catch (e) { console.warn('Auth profile init failed'); }
+    try { initFileHandling(); } catch (e) { console.warn('File handling init failed'); }
+    try { initWorkspaceNews(); } catch (e) { console.warn('News feed init failed'); }
+    try { autoFillFromUrl(); } catch (e) { console.warn('Auto-fill init failed'); }
 
     // Initial reveal for hero
     setTimeout(() => {
-        const heroReveals = document.querySelectorAll('#home .reveal');
-        heroReveals.forEach(el => el.classList.add('active'));
+        try {
+            const heroReveals = document.querySelectorAll('#home .reveal');
+            heroReveals.forEach(el => el.classList.add('active'));
+        } catch (e) {}
     }, 100);
 };
 
