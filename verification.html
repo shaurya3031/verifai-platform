@@ -486,6 +486,73 @@
                 right: 0;
             }
         }
+
+        /* === MOBILE FIXES === */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { overflow-x: hidden; }
+        
+        input, textarea, select { font-size: 16px !important; }
+        
+        button, a { -webkit-tap-highlight-color: transparent; }
+
+        .navbar { width: 100%; max-width: 100%; }
+
+        @media (max-width: 768px) {
+            .nav-links, .nav-auth-buttons, #userProfile, #navLoadingChip { display: none !important; }
+            .nav-hamburger { display: flex !important; }
+        }
+
+        /* Navbar & Mobile Menu Styles */
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+        }
+
+        .nav-hamburger span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: 0.3s;
+        }
+
+        .nav-hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .nav-hamburger.active span:nth-child(2) { opacity: 0; }
+        .nav-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        .nav-mobile-menu {
+            display: none;
+            position: fixed;
+            top: 72px;
+            left: 0;
+            width: 100%;
+            background: rgba(8, 11, 26, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-card);
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-mobile-menu.active { display: flex; }
+
+        .nav-mobile-menu a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-mobile-menu a:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -524,7 +591,21 @@
             <div class="status-dot"></div>
             <span>Loading...</span>
         </div>
+        <button class="nav-hamburger" id="navHamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="nav-mobile-menu" id="navMobileMenu">
+        <a href="index.html">Home</a>
+        <a href="weather.html">Weather</a>
+        <a href="updates.html">Live Updates</a>
+        <a href="verification.html" class="gradient-text">Workspace</a>
+        <button onclick="window.handleLogout()" style="background:none; border:none; color:var(--accent-red); font-size:1.1rem; font-weight:600; padding:12px 0; text-align:left; width:100%; cursor:pointer;">Logout</button>
+    </div>
 
     <!-- Sidebar Toggle FABs -->
     <button class="sidebar-toggle-fab" id="sidebarToggleBtn" title="Show History">
@@ -763,6 +844,25 @@
     <script src="auth.js"></script>
     <script src="app.js"></script>
     <script>
+    // --- Mobile Menu Toggle ---
+    const hamburger = document.getElementById('navHamburger');
+    const mobileMenu = document.getElementById('navMobileMenu');
+    
+    if (hamburger && mobileMenu) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+        
+        // Close menu when clicking links
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            });
+        });
+    }
+
     // ===== Sidebar Toggle Logic =====
     const sidebar = document.getElementById('historySidebar');
     const newsSidebar = document.getElementById('newsSidebar');
