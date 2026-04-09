@@ -110,6 +110,21 @@ module.exports = {
         }
     },
 
+    // Get latest verifications across ALL users (Global Stream)
+    getGlobalHistory: async (maxCount = 20) => {
+        if (!isDbReady()) return [];
+        try {
+            const snapshot = await db.collection('verifications')
+                .orderBy('createdAt', 'desc')
+                .limit(maxCount)
+                .get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (err) {
+            console.error('Firestore getGlobalHistory error:', err.message);
+            return [];
+        }
+    },
+
     // Get verification from cache (for global deduplication)
     getVerification: async (claim_id, model) => {
         if (!isDbReady()) return null;

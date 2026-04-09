@@ -118,6 +118,7 @@ app.post('/api/nvidia', async (req, res) => {
             const content = data.choices[0].message.content;
             await db.saveVerification({
                 claim_id,
+                claim: req.body.claim || claim_id.replace(/-/g, ' '), // Save actual claim text
                 user_email: req.body.user_email || 'guest',
                 model: model_name,
                 verdict: 'Analyzed',
@@ -317,6 +318,15 @@ app.get('/api/history', async (req, res) => {
     }
 });
 
+app.get('/api/history/global', async (req, res) => {
+    try {
+        const history = await db.getGlobalHistory(50);
+        res.json(history);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.get('/api/user-history', async (req, res) => {
     const email = req.query.email;
     if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -495,6 +505,27 @@ app.get('/api/proxy/location', async (req, res) => {
 const server = http.listen(PORT, '0.0.0.0', async () => {
     // Initialize Firestore Database
     await db.initDatabase().catch(e => console.error('DB Init error:', e.message));
+
+    // 🔄 Boot-time Persistence: Load history from Firebase
+    console.log('📦 Warming up server cache from Firestore...');
+    try {
+        const historicalNews = await db.getLatestNews(MAX_HISTORY);
+        historicalNews.forEach(item => lastBroadcastedTitles.add(item.title));
+        
+        const historicalClaims = await db.getGlobalHistory(10);
+        // Map verifications to the claim format expected by sockets
+        recentClaims = historicalClaims.map(v => ({
+            claim: v.claim || v.claim_id.replace(/-/g, ' '),
+            timestamp: v.createdAt ? v.createdAt.toDate().toISOString() : new Date().toISOString(),
+            id: v.claim_id,
+            source: 'Verified History',
+            category: 'history'
+        }));
+        console.log(`✅ Loaded ${lastBroadcastedTitles.size} news titles and ${recentClaims.length} recent claims from Firestore`);
+    } catch (err) {
+        console.warn('⚠️  Could not prime cache from Firestore:', err.message);
+    }
+
     const interfaces = os.networkInterfaces();
     let localIp = 'localhost';
 

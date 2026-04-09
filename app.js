@@ -482,6 +482,7 @@ async function queryNvidiaModel(modelKey, claim) {
             },
             body: JSON.stringify({
                 claim_id: currentClaimId,
+                claim: claim, // Original unformatted text
                 user_email: currentUser ? currentUser.email : 'guest',
                 model_name: modelKey,
                 model: model.id,
