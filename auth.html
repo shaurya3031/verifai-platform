@@ -156,6 +156,27 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* === MOBILE FIXES === */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { overflow-x: hidden; }
+        
+        input, textarea, select { font-size: 16px !important; }
+        
+        button, a { -webkit-tap-highlight-color: transparent; }
+
+        .google-btn, .auth-submit { min-height: 48px; }
+
+        @media (max-width: 480px) {
+            .auth-container { padding: 80px 16px 20px !important; }
+            .back-home { top: 16px !important; left: 16px !important; }
+            .auth-divider { margin: 20px 0 !important; } /* Replaced style for the divider */
+        }
+
+        @media (max-width: 400px) {
+            .auth-card { padding: 24px 16px !important; }
+            .auth-tab { font-size: 0.8rem !important; padding: 8px !important; }
+        }
     </style>
 </head>
 <body>
@@ -222,7 +243,7 @@
                 <button type="submit" class="auth-submit magnetic" id="submitBtn">Sign In</button>
             </form>
 
-            <div style="text-align: center; margin: 24px 0; color: var(--text-muted); font-size: 0.8rem; position: relative;">
+            <div class="auth-divider" style="text-align: center; margin: 24px 0; color: var(--text-muted); font-size: 0.8rem; position: relative;">
                 <span style="background: var(--bg-primary); padding: 0 10px; position: relative; z-index: 1;">OR CONTINUE WITH</span>
                 <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border-card);"></div>
             </div>

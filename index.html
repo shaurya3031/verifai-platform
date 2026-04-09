@@ -366,6 +366,120 @@
             .cta-card { padding: 50px 28px; }
         }
     </style>
+    <style>
+        /* === MOBILE FIXES === */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { overflow-x: hidden; }
+        
+        input, textarea, select { font-size: 16px !important; }
+        
+        button, a { -webkit-tap-highlight-color: transparent; }
+
+        .navbar { width: 100%; max-width: 100%; }
+        .nav-links, .nav-auth-buttons { flex-wrap: wrap; }
+
+        @media (max-width: 900px) {
+            .features-section, .about-section, .privacy-section, .cta-section {
+                padding: 60px 24px !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links, .nav-auth-buttons { display: none !important; }
+            .nav-hamburger { display: flex !important; }
+        }
+
+        @media (max-width: 480px) {
+            .features-section, .about-section, .privacy-section, .cta-section {
+                padding: 40px 16px !important;
+            }
+        }
+
+        /* Navbar & Mobile Menu Styles */
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+        }
+
+        .nav-hamburger span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: 0.3s;
+        }
+
+        .nav-hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .nav-hamburger.active span:nth-child(2) { opacity: 0; }
+        .nav-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        .nav-mobile-menu {
+            display: none;
+            position: fixed;
+            top: 72px;
+            left: 0;
+            width: 100%;
+            background: rgba(8, 11, 26, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-card);
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-mobile-menu.active { display: flex; }
+
+        .nav-mobile-menu a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-mobile-menu a:last-child { border-bottom: none; }
+
+        /* Index Specific */
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 120px;
+                gap: 40px;
+            }
+            .hero-content { max-width: 100%; }
+            .hero-title { font-size: clamp(2rem, 8vw, 5rem); }
+            .hero-subtitle { font-size: clamp(0.9rem, 2.5vw, 1.1rem); margin-inline: auto; }
+            .features-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 640px) {
+            .hero-visual { display: none !important; }
+            .about-stats { grid-template-columns: 1fr 1fr !important; }
+            .privacy-grid { grid-template-columns: 1fr !important; }
+            .bento-item.wide { grid-column: span 1 !important; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-actions {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+            .hero-actions a { width: 100%; justify-content: center; }
+            .about-container { gap: 32px !important; }
+            .cta-card { padding: 36px 20px !important; }
+            .cta-card h2 { font-size: clamp(1.6rem, 5vw, 2.5rem); }
+            .footer-links { flex-wrap: wrap; gap: 12px; justify-content: center; }
+        }
+    </style>
 </head>
 <body>
     <!-- Shader Background -->
@@ -398,7 +512,22 @@
             <a href="auth.html" class="btn-login" id="navLoginBtn">Login</a>
             <a href="auth.html" class="btn-signup" id="navSignupBtn">Get Started Free</a>
         </div>
+        <button class="nav-hamburger" id="navHamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="nav-mobile-menu" id="navMobileMenu">
+        <a href="index.html">Home</a>
+        <a href="#about">About Us</a>
+        <a href="#privacy">Privacy</a>
+        <a href="updates.html">Live Updates</a>
+        <a href="auth.html">Login</a>
+        <a href="auth.html" class="gradient-text">Get Started</a>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero" id="home">
@@ -685,6 +814,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="shader.js"></script>
     <script>
+    // --- Mobile Menu Toggle ---
+    const hamburger = document.getElementById('navHamburger');
+    const mobileMenu = document.getElementById('navMobileMenu');
+    
+    if (hamburger && mobileMenu) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+        
+        // Close menu when clicking links
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            });
+        });
+    }
+
     // --- Scroll Reveals ---
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
