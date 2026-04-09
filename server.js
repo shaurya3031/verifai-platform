@@ -469,6 +469,51 @@ app.get('/api/proxy/weather', async (req, res) => {
     }
 });
 
+// ==========================================
+// 🌦️ AI City Correction Fallback
+// ==========================================
+app.post('/api/weather/correct-city', async (req, res) => {
+    const { query } = req.body;
+    if (!query) return res.status(400).json({ error: 'Missing query' });
+
+    if (!NVIDIA_API_KEY) {
+        return res.json({ suggestion: query }); // No AI, just return original
+    }
+
+    try {
+        console.log(`🧠 AI Analyzing city query: "${query}"`);
+        
+        const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${NVIDIA_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "meta/llama-3.1-405b-instruct",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: "You are a specialized geocoding assistant. The user searched for a city name that yielded no results. Analyze the input (which may be misspelled, a nickname, or incomplete) and return the most likely intended city name. Return ONLY the string of the city name (e.g., 'London'). If you are unsure or the input is gibberish, return the original input exactly. No explanations, no markdown, just the name." 
+                    },
+                    { role: "user", content: query }
+                ],
+                temperature: 0.2,
+                max_tokens: 32
+            })
+        });
+
+        const data = await response.json();
+        const suggestion = data.choices?.[0]?.message?.content?.trim() || query;
+        
+        console.log(`💡 AI Suggested correction: "${suggestion}"`);
+        res.json({ suggestion });
+    } catch (error) {
+        console.error('❌ AI City Correction error:', error.message);
+        res.json({ suggestion: query });
+    }
+});
+
 app.get('/api/proxy/location', async (req, res) => {
     try {
         const { lat, lon } = req.query;

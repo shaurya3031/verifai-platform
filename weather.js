@@ -160,32 +160,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const handleManualSearch = async () => {
-        const query = citySearchInput.value.trim();
+    const handleManualSearch = async (retryQuery = null) => {
+        const query = retryQuery || citySearchInput.value.trim();
         if (!query) return;
 
         manualSearchState.classList.add('hidden');
         loadingState.classList.remove('hidden');
+        
+        // Update loading text
+        const loaderText = loadingState.querySelector('p');
+        if (loaderText) loaderText.textContent = retryQuery ? `Searching for "${retryQuery}" instead...` : 'Fetching global atmospheric data...';
 
         try {
-            // Use existing geocoding proxy to find coords
-            const BACKEND_URL = window.location.port === '3000' ? '' : 'http://localhost:3000';
+            // Search Nominatim
             const searchUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
-            
             const res = await fetch(searchUrl);
             const data = await res.json();
 
             if (data && data.length > 0) {
                 const { lat, lon } = data[0];
                 fetchWeather(parseFloat(lat), parseFloat(lon));
+            } else if (!retryQuery) {
+                // If first attempt fails, ASK AI for correction
+                if (loaderText) loaderText.textContent = 'Analyzing your query...';
+                
+                console.log('⚠️ City not found in standard database. Consulting AI for correction...');
+                
+                const aiRes = await fetch('/api/weather/correct-city', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                
+                const { suggestion } = await aiRes.json();
+                
+                if (suggestion && suggestion.toLowerCase() !== query.toLowerCase()) {
+                    console.log(`✨ AI Suggested: ${suggestion}. Retrying search...`);
+                    // Automatically retry with suggestion
+                    handleManualSearch(suggestion);
+                } else {
+                    throw new Error('City not found');
+                }
             } else {
                 throw new Error('City not found');
             }
         } catch (err) {
             console.error('❌ Manual Search Error:', err);
-            alert('City not found. Please check spelling or try a larger city nearby.');
+            alert(`Location "${query}" not found. Please try a different city name.`);
             loadingState.classList.add('hidden');
             manualSearchState.classList.remove('hidden');
+            if (loaderText) loaderText.textContent = 'Fetching global atmospheric data...';
         }
     };
 

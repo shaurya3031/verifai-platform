@@ -98,6 +98,76 @@ body::before {
     pointer-events: none;
 }
 
+/* Workspace Tools in Navbar */
+.nav-tool-btn {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-card);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-tool-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-main);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.nav-tool-btn:hover {
+    color: white;
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#navHistoryBtn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+#navNewsBtn:hover {
+    border-color: var(--accent-purple);
+    color: var(--accent-purple);
+    box-shadow: 0 0 15px rgba(129, 140, 248, 0.2);
+}
+
+.nav-tool-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    color: white;
+}
+
+#navHistoryBtn.active {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    background: rgba(56, 189, 248, 0.1);
+}
+
+#navNewsBtn.active {
+    border-color: var(--accent-purple);
+    color: var(--accent-purple);
+    background: rgba(129, 140, 248, 0.1);
+}
+
+@media (max-width: 768px) {
+    .nav-workspace-tools {
+        display: none !important; /* Hide tools in main nav on mobile to avoid crowding */
+    }
+}
+
 /* Bento Grid System */
 .bento-grid {
     display: grid;
