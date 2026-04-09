@@ -100,10 +100,17 @@ module.exports = {
         try {
             const snapshot = await db.collection('verifications')
                 .where('user_email', '==', user_email)
-                .orderBy('createdAt', 'desc')
                 .limit(maxCount)
                 .get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Sort in memory to avoid index requirement
+            return results.sort((a, b) => {
+                const tA = a.createdAt ? a.createdAt.toDate().getTime() : 0;
+                const tB = b.createdAt ? b.createdAt.toDate().getTime() : 0;
+                return tB - tA;
+            });
         } catch (err) {
             console.error('Firestore getUserHistory error:', err.message);
             return [];
@@ -115,10 +122,17 @@ module.exports = {
         if (!isDbReady()) return [];
         try {
             const snapshot = await db.collection('verifications')
-                .orderBy('createdAt', 'desc')
                 .limit(maxCount)
                 .get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Sort in memory to avoid index requirement
+            return results.sort((a, b) => {
+                const tA = a.createdAt ? a.createdAt.toDate().getTime() : 0;
+                const tB = b.createdAt ? b.createdAt.toDate().getTime() : 0;
+                return tB - tA;
+            });
         } catch (err) {
             console.error('Firestore getGlobalHistory error:', err.message);
             return [];
@@ -132,7 +146,6 @@ module.exports = {
             const snapshot = await db.collection('verifications')
                 .where('claim_id', '==', claim_id)
                 .where('model', '==', model)
-                .orderBy('createdAt', 'desc')
                 .limit(1)
                 .get();
             if (snapshot.empty) return null;
