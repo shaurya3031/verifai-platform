@@ -930,6 +930,8 @@ function addLiveFeedItem(data) {
 
     const item = document.createElement('div');
     item.className = 'live-item';
+    
+    // Use innerHTML for structure, but we'll bind the button separately for robustness
     item.innerHTML = `
         <div class="live-item-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
@@ -942,8 +944,16 @@ function addLiveFeedItem(data) {
                 <span>${new Date(data.timestamp).toLocaleTimeString()}</span>
             </div>
         </div>
-        <button class="live-item-verify-btn" onclick="verifyFromFeed('${escapeHtml(data.claim).replace(/'/g, "\\'")}', '${data.id}')">Verify Now</button>
+        <button class="live-item-verify-btn">Verify Now</button>
     `;
+
+    // Robust event binding
+    const verifyBtn = item.querySelector('.live-item-verify-btn');
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', () => {
+            verifyFromFeed(data.claim, data.id);
+        });
+    }
 
     liveFeedList.prepend(item);
 
