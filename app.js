@@ -495,10 +495,10 @@ const initEventListeners = () => {
     // 4. Report Generation
     const createReportBtn = document.getElementById('createReportBtn');
     if (createReportBtn) {
-        createReportBtn.addEventListener('click', generateProfessionalReport);
+        createReportBtn.addEventListener('click', generateAnalyzedReport);
     }
     if (exportPdfBtn) {
-        exportPdfBtn.addEventListener('click', generateProfessionalReport);
+        exportPdfBtn.addEventListener('click', generateAnalyzedReport);
     }
 };
 
