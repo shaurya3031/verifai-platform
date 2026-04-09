@@ -86,8 +86,8 @@ const toggleMode = (login) => {
     submitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
 };
 
-loginTab.addEventListener('click', () => toggleMode(true));
-signupTab.addEventListener('click', () => toggleMode(false));
+if (loginTab) loginTab.addEventListener('click', () => toggleMode(true));
+if (signupTab) signupTab.addEventListener('click', () => toggleMode(false));
 
 // --- Auth Functions ---
 const handleAuth = async (e) => {

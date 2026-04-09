@@ -113,20 +113,7 @@ app.post('/api/nvidia', async (req, res) => {
             return res.status(401).json({ error: 'NVIDIA API Key is invalid or unauthorized.' });
         }
 
-        // Save to Cache if successful
-        if (response.ok && claim_id && model_name && data.choices && data.choices[0]) {
-            const content = data.choices[0].message.content;
-            await db.saveVerification({
-                claim_id,
-                claim: req.body.claim || claim_id.replace(/-/g, ' '), // Save actual claim text
-                user_email: req.body.user_email || 'guest',
-                model: model_name,
-                verdict: 'Analyzed',
-                explanation: content,
-                confidence: 85
-            }).catch(e => console.error('Cache save error:', e.message));
-        }
-
+        // Responding to client (Aggregated saving handled by frontend)
         res.status(response.status).json(data);
     } catch (error) {
         console.error('NVIDIA API proxy error:', error.message);
@@ -307,7 +294,33 @@ app.get('/api/fact-check', async (req, res) => {
 });
 
 // ==========================================
-// 🕒 News History API
+// 🕒 History Persistence API (Aggregated)
+// ==========================================
+app.post('/api/history/save', async (req, res) => {
+    const { claim, claim_id, user_email, verdict, trustScore, summary } = req.body;
+
+    if (!claim || !user_email) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        await db.saveVerification({
+            claim_id: claim_id || `custom-${Date.now()}`,
+            claim: claim,
+            user_email: user_email,
+            verdict: verdict || 'Analyzed',
+            trustScore: trustScore || 0,
+            summary: summary || '',
+            model: 'VerifAI Aggregated',
+            confidence: trustScore || 50
+        });
+        res.json({ success: true });
+    } catch (err) {
+        console.error('❌ History Save Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ==========================================
 app.get('/api/history', async (req, res) => {
     try {

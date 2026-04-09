@@ -199,21 +199,29 @@ const renderUserHistory = (history) => {
                 </div>
             `;
         } else {
-            userHistoryList.innerHTML = history.map(item => `
-                <div class="history-card glass reveal active">
-                    <div class="card-header">
-                        <span class="card-date">${new Date(item.date).toLocaleDateString()}</span>
-                        <span class="verdict-badge verdict-${(item.verdict || 'unknown').toLowerCase()}">${item.verdict}</span>
-                    </div>
-                    <p class="card-claim">${item.claim_id.replace(/-/g, ' ')}</p>
-                    <div class="card-footer">
-                        <span class="model-tag">${item.model}</span>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" style="width: ${item.confidence}%"></div>
+    userHistoryList.innerHTML = history.map(item => {
+                const verdict = item.verdict || 'Analyzed';
+                // Sanitize verdict for CSS class (remove emojis and lowercase)
+                const safeVerdict = verdict.replace(/[^\x00-\x7F]/g, "").trim().toLowerCase().split(' ')[0] || 'neutral';
+                const claimText = item.claim || item.claim_id.replace(/-/g, ' ');
+                const confidence = item.trustScore || item.confidence || 0;
+                
+                return `
+                    <div class="history-card glass reveal active" style="transition-delay: 0.1s">
+                        <div class="card-header">
+                            <span class="card-date">${new Date(item.date).toLocaleDateString()}</span>
+                            <span class="verdict-badge verdict-${safeVerdict}">${verdict}</span>
+                        </div>
+                        <p class="card-claim">${claimText}</p>
+                        <div class="card-footer">
+                            <span class="model-tag">${item.model || 'VerifAI Aggregate'}</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: ${confidence}%"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
     }
 
@@ -858,9 +866,27 @@ async function handleVerify(providedClaimId = null) {
     verifyBtn.classList.remove('loading');
     verifyBtn.disabled = false;
 
-    // 🔄 REFRESH HISTORY SIDEBAR IMMEDIATELY
+    // 💾 SAVE TO FIREBASE HISTORY
     if (currentUser && currentUser.email) {
-        setTimeout(() => fetchUserHistory(currentUser.email), 1500);
+        fetch('/api/history/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                claim: claim,
+                claim_id: currentClaimId,
+                user_email: currentUser.email,
+                verdict: verdict.label,
+                trustScore: verdict.trustScore,
+                summary: verdict.summary
+            })
+        })
+        .then(res => res.json())
+        .then(() => {
+            console.log('✅ History saved to Firebase');
+            // Refresh sidebar
+            setTimeout(() => fetchUserHistory(currentUser.email), 1000);
+        })
+        .catch(err => console.error('❌ History Save Failed:', err));
     }
 }
 
@@ -886,6 +912,15 @@ function setupSocketListeners() {
     });
 }
 
+function verifyFromFeed(claim, claimId) {
+    if (!claimInput || !verifyBtn) return;
+    claimInput.value = claim;
+    if (charCount) charCount.textContent = claim.length;
+    verifyBtn.disabled = false;
+    handleVerify(claimId);
+}
+window.verifyFromFeed = verifyFromFeed;
+
 function addLiveFeedItem(data) {
     if (!liveFeedList) return;
 
@@ -909,13 +944,6 @@ function addLiveFeedItem(data) {
         </div>
         <button class="live-item-verify-btn" onclick="verifyFromFeed('${escapeHtml(data.claim).replace(/'/g, "\\'")}', '${data.id}')">Verify Now</button>
     `;
-
-    function verifyFromFeed(claim, claimId) {
-        claimInput.value = claim;
-        charCount.textContent = claim.length;
-        verifyBtn.disabled = false;
-        handleVerify(claimId);
-    }
 
     liveFeedList.prepend(item);
 
