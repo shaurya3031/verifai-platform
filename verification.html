@@ -884,7 +884,7 @@
             const date = new Date(item.date || item.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'});
             
             // Use original claim text if available, fallback to slug-to-text conversion
-            const claim = item.claim || (item.claim_id ? item.claim_id.replace(/-/g, ' ') : 'Unknown claim');
+            const claim = item.claim || (item.claim_id ? String(item.claim_id).replace(/-/g, ' ') : 'Unknown claim');
 
             return `
                 <div class="history-item-card" onclick="loadClaimFromHistory('${claim.replace(/'/g,"\\'")}')">
