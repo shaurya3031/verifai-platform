@@ -887,7 +887,9 @@ async function handleVerify(providedClaimId = null) {
     if (!claim || claim.length < 10) return;
 
     const cleanClaim = claim.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 50);
-    currentClaimId = providedClaimId || `custom-${cleanClaim}-${Date.now()}`;
+    // Ignore PointerEvent if handleVerify is called directly as an event listener
+    const safeClaimId = (typeof providedClaimId === 'string') ? providedClaimId : null;
+    currentClaimId = safeClaimId || `custom-${cleanClaim}-${Date.now()}`;
 
     resultsArea.classList.remove('hidden');
     resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
