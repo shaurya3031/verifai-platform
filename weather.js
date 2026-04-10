@@ -161,7 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleManualSearch = async (retryQuery = null) => {
-        const query = retryQuery || citySearchInput.value.trim();
+        // Ensure retryQuery is a string (ignoring Event objects from click listeners)
+        const query = (typeof retryQuery === 'string' ? retryQuery : null) || citySearchInput.value.trim();
         if (!query) return;
 
         manualSearchState.classList.add('hidden');
@@ -308,10 +309,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const heroReveals = document.querySelectorAll('.weather-hero .reveal');
         heroReveals.forEach(el => el.classList.add('active'));
+        
+        // AUTO-DETECT LOCATION ON LOAD
+        handleLocation();
     }, 100);
 
     locBtn.addEventListener('click', handleLocation);
-    citySearchBtn.addEventListener('click', handleManualSearch);
+    citySearchBtn.addEventListener('click', (e) => handleManualSearch());
     citySearchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleManualSearch();
     });
