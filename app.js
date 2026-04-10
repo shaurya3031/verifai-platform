@@ -937,6 +937,19 @@ async function handleVerify(providedClaimId = null) {
         })
         .catch(err => console.error('❌ History Save Failed:', err));
     }
+
+    // 📄 SET DATA FOR REPORT GENERATION
+    lastReportData = {
+        claim: claim,
+        claim_id: currentClaimId,
+        verdict: verdict,
+        models: {
+            llama: llamaResult,
+            mistral: mistralResult,
+            nemotron: nemotronResult
+        },
+        sources: googleResults
+    };
 }
 
 
