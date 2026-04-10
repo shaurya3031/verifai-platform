@@ -83,7 +83,7 @@ const toggleMode = (login) => {
     authSubtitle.textContent = isLoginMode 
         ? 'Sign in to continue verifying the truth.' 
         : 'Join VerifAI to start fact-checking with precision.';
-    submitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
+    submitBtn.textContent = isLoginMode ? 'Login' : 'Sign Up';
 };
 
 if (loginTab) loginTab.addEventListener('click', () => toggleMode(true));
@@ -96,7 +96,7 @@ const handleAuth = async (e) => {
     const password = passwordInput.value;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = isLoginMode ? 'Signing In...' : 'Creating Account...';
+    submitBtn.textContent = isLoginMode ? 'Logging In...' : 'Creating Account...';
 
     try {
         if (isLoginMode) {
@@ -137,7 +137,7 @@ const handleAuth = async (e) => {
         }
 
         submitBtn.disabled = false;
-        submitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
+        submitBtn.textContent = isLoginMode ? 'Login' : 'Sign Up';
     }
 };
 

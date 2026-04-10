@@ -119,7 +119,7 @@ const verifyBtn = document.getElementById('verifyBtn');
 const resultsArea = document.getElementById('resultsArea');
 const navbar = document.getElementById('navbar');
 const liveFeedList = document.getElementById('liveFeedList');
-const exportPdfBtn = document.getElementById('exportPdfBtn');
+const createReportBtn = document.getElementById('createReportBtn');
 
 // Model elements
 const modelElements = {
@@ -467,74 +467,10 @@ const initEventListeners = () => {
         });
     }
 
-    // 3. Sidebar Toggles & Navbar Tools
-    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-    const newsToggleBtn = document.getElementById('newsToggleBtn');
-    const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
-    const newsCollapseBtn = document.getElementById('newsCollapseBtn');
-    const historySidebar = document.getElementById('historySidebar');
-    const newsSidebar = document.getElementById('newsSidebar');
-    const navHistoryBtn = document.getElementById('navHistoryBtn');
-    const navNewsBtn = document.getElementById('navNewsBtn');
-    const verifyMain = document.getElementById('verifyMain');
-
-    const updateNavToolStates = () => {
-        if (navHistoryBtn && historySidebar) {
-            navHistoryBtn.classList.toggle('active', !historySidebar.classList.contains('collapsed'));
-        }
-        if (navNewsBtn && newsSidebar) {
-            navNewsBtn.classList.toggle('active', !newsSidebar.classList.contains('collapsed'));
-        }
-    };
-
-    const toggleHistory = () => {
-        if (!historySidebar) return;
-        
-        // Exclusive Mode: Close news if we are opening history
-        const isOpening = historySidebar.classList.contains('collapsed');
-        if (isOpening && newsSidebar && !newsSidebar.classList.contains('collapsed')) {
-            toggleNews();
-        }
-
-        historySidebar.classList.toggle('collapsed');
-        if (sidebarToggleBtn) sidebarToggleBtn.classList.toggle('sidebar-hidden');
-        if (verifyMain) verifyMain.classList.toggle('sidebar-collapsed');
-        updateNavToolStates();
-    };
-
-    const toggleNews = () => {
-        if (!newsSidebar) return;
-
-        // Exclusive Mode: Close history if we are opening news
-        const isOpening = newsSidebar.classList.contains('collapsed');
-        if (isOpening && historySidebar && !historySidebar.classList.contains('collapsed')) {
-            toggleHistory();
-        }
-
-        newsSidebar.classList.toggle('collapsed');
-        if (newsToggleBtn) newsToggleBtn.classList.toggle('sidebar-hidden');
-        if (verifyMain) verifyMain.classList.toggle('news-collapsed');
-        updateNavToolStates();
-    };
-
-    if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleHistory);
-    if (sidebarCollapseBtn) sidebarCollapseBtn.addEventListener('click', toggleHistory);
-    if (navHistoryBtn) navHistoryBtn.addEventListener('click', toggleHistory);
-
-    if (newsToggleBtn) newsToggleBtn.addEventListener('click', toggleNews);
-    if (newsCollapseBtn) newsCollapseBtn.addEventListener('click', toggleNews);
-    if (navNewsBtn) navNewsBtn.addEventListener('click', toggleNews);
-
-    // Initial Sync
-    updateNavToolStates();
-
-    // 4. Report Generation
+    // 3. Report Generation
     const createReportBtn = document.getElementById('createReportBtn');
     if (createReportBtn) {
         createReportBtn.addEventListener('click', generateAnalyzedReport);
-    }
-    if (exportPdfBtn) {
-        exportPdfBtn.addEventListener('click', generateAnalyzedReport);
     }
 };
 
@@ -1305,6 +1241,11 @@ window.addEventListener('load', () => {
 
     checkServerStatus();
     setInterval(checkServerStatus, 5000);
+
+    // Bind report generation specifically
+    if (createReportBtn) {
+        createReportBtn.addEventListener('click', generateAnalyzedReport);
+    }
 });
 
 // Server Health Heartbeat

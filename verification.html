@@ -138,6 +138,10 @@
         <a href="weather.html">Weather</a>
         <a href="updates.html">Live Updates</a>
         <a href="verification.html" class="gradient-text">Workspace</a>
+        <div style="margin: 10px 0; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
+            <a href="#" id="mobileHistoryBtn" style="color: var(--accent-cyan); font-size: 0.95rem;">📊 My History</a>
+            <a href="#" id="mobileNewsBtn" style="color: var(--accent-purple); font-size: 0.95rem;">📰 Trending News</a>
+        </div>
         <button onclick="window.handleLogout()" style="background:none; border:none; color:var(--accent-red); font-size:1.1rem; font-weight:600; padding:12px 0; text-align:left; width:100%; cursor:pointer;">Logout</button>
     </div>
 
@@ -399,19 +403,25 @@
         verifyMain.style.marginRight = newsOpen ? '360px' : '0';
     }
 
+    function updateNavToolStates() {
+        if (navHistoryBtn) navHistoryBtn.classList.toggle('active', sidebarOpen);
+        if (navNewsBtn) navNewsBtn.classList.toggle('active', newsOpen);
+    }
+
     function setSidebarState(open) {
         sidebarOpen = open;
         if (open) {
             sidebar.classList.remove('collapsed');
             if (window.innerWidth <= 1024) {
                 backdrop.classList.add('active');
-                setNewsState(false); // Close other sidebar on mobile
+                if (newsOpen) setNewsState(false);
             }
         } else {
             sidebar.classList.add('collapsed');
-            if (window.innerWidth <= 1024) backdrop.classList.remove('active');
+            if (window.innerWidth <= 1024 && !newsOpen) backdrop.classList.remove('active');
         }
         updateMainMargins();
+        updateNavToolStates();
     }
 
     function setNewsState(open) {
@@ -420,17 +430,39 @@
             newsSidebar.classList.remove('collapsed');
             if (window.innerWidth <= 1024) {
                 backdrop.classList.add('active');
-                setSidebarState(false); // Close other sidebar on mobile
+                if (sidebarOpen) setSidebarState(false);
             }
         } else {
             newsSidebar.classList.add('collapsed');
-            if (window.innerWidth <= 1024) backdrop.classList.remove('active');
+            if (window.innerWidth <= 1024 && !sidebarOpen) backdrop.classList.remove('active');
         }
         updateMainMargins();
+        updateNavToolStates();
     }
 
     if (navHistoryBtn) navHistoryBtn.addEventListener('click', () => setSidebarState(!sidebarOpen));
     if (navNewsBtn) navNewsBtn.addEventListener('click', () => setNewsState(!newsOpen));
+
+    // Mobile specific listeners
+    const mobileHistoryBtn = document.getElementById('mobileHistoryBtn');
+    const mobileNewsBtn = document.getElementById('mobileNewsBtn');
+
+    if (mobileHistoryBtn) {
+        mobileHistoryBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setSidebarState(true);
+            hamburger.classList.remove('active');
+            mobileMenu.classList.remove('active');
+        });
+    }
+    if (mobileNewsBtn) {
+        mobileNewsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setNewsState(true);
+            hamburger.classList.remove('active');
+            mobileMenu.classList.remove('active');
+        });
+    }
     
     if (collapseBtn) collapseBtn.addEventListener('click', () => setSidebarState(false));
     if (newsCollapseBtn) newsCollapseBtn.addEventListener('click', () => setNewsState(false));

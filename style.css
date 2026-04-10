@@ -162,6 +162,24 @@ body::before {
     background: rgba(129, 140, 248, 0.1);
 }
 
+/* Sidebar Backdrop (Mobile Click-to-Close) */
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.sidebar-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 @media (max-width: 768px) {
     .nav-workspace-tools {
         display: none !important; /* Hide tools in main nav on mobile to avoid crowding */
