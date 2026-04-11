@@ -144,14 +144,21 @@ const handleAuth = async (e) => {
 const handleGoogleSignIn = async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     const hostname = window.location.hostname;
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     
-    // Check if we already tried popup and failed (to avoid loops)
+    // Detect In-App Browsers (LinkedIn, Instagram, FB) which block popups
+    const isLinkedIn = userAgent.includes('LinkedInApp');
+    const isInApp = isLinkedIn || userAgent.includes('FBAN') || userAgent.includes('FBAV') || userAgent.includes('Instagram');
+    
+    // Check if we already tried popup and failed
     const isRedirectFallback = localStorage.getItem('google_auth_fallback') === 'true';
 
     try {
         console.log(`🚀 Starting Google Sign-In on ${hostname}...`);
         
-        if (isRedirectFallback) {
+        // If LinkedIn or already failed once, use Redirect instead of Popup
+        if (isRedirectFallback || isInApp) {
+            console.log('🔗 In-App Browser or Fallback detected -> Using Redirect');
             localStorage.removeItem('google_auth_fallback');
             await auth.signInWithRedirect(provider);
             return;
