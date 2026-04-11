@@ -147,8 +147,13 @@ const handleGoogleSignIn = async () => {
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     
     // Detect In-App Browsers (LinkedIn, Instagram, FB) which block popups
-    const isLinkedIn = userAgent.includes('LinkedInApp');
-    const isInApp = isLinkedIn || userAgent.includes('FBAN') || userAgent.includes('FBAV') || userAgent.includes('Instagram');
+    const uaLower = userAgent.toLowerCase();
+    const isInApp = uaLower.includes('linkedin') || 
+                    uaLower.includes('fban') || 
+                    uaLower.includes('fbav') || 
+                    uaLower.includes('instagram') ||
+                    uaLower.includes('threads') ||
+                    uaLower.includes('messenger');
     
     // Check if we already tried popup and failed
     const isRedirectFallback = localStorage.getItem('google_auth_fallback') === 'true';
