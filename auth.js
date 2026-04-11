@@ -143,7 +143,20 @@ const handleAuth = async (e) => {
 
 const handleGoogleSignIn = async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
+    const hostname = window.location.hostname;
+    
+    // Check if we already tried popup and failed (to avoid loops)
+    const isRedirectFallback = localStorage.getItem('google_auth_fallback') === 'true';
+
     try {
+        console.log(`🚀 Starting Google Sign-In on ${hostname}...`);
+        
+        if (isRedirectFallback) {
+            localStorage.removeItem('google_auth_fallback');
+            await auth.signInWithRedirect(provider);
+            return;
+        }
+
         await auth.signInWithPopup(provider);
         
         // Trigger On-Demand News Refresh on Backend
@@ -152,8 +165,24 @@ const handleGoogleSignIn = async () => {
         // Redirect to verification workspace
         window.location.href = 'verification.html';
     } catch (error) {
-        console.error('Google Sign-In Error:', error.message);
-        alert(`Google Sign-In Failed: ${error.message}`);
+        console.error('Google Auth Detail Error:', error);
+
+        if (error.code === 'auth/unauthorized-domain') {
+            const domain = window.location.hostname;
+            const message = `❌ ACCESS BLOCKED\n\nThe domain "${domain}" is not authorized in your Firebase/Google setup.\n\nFIX QUICKLY:\n1. Go to Firebase Console -> Authentication -> Settings -> Authorized domains.\n2. Add "${domain}" to the list.\n3. Also add it to "Authorized JavaScript origins" in Google Cloud Console.`;
+            alert(message);
+            showErrorBanner(`Unauthorized Domain: Please whitelist ${domain} in Firebase Console.`);
+        } 
+        else if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+            const tryRedirect = confirm('The login popup was blocked or closed. Switch to "Direct Redirect" mode?');
+            if (tryRedirect) {
+                localStorage.setItem('google_auth_fallback', 'true');
+                await auth.signInWithRedirect(provider);
+            }
+        }
+        else {
+            showErrorBanner(`Google Auth Failed: ${error.message}`);
+        }
     }
 };
 
