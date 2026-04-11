@@ -7,14 +7,14 @@
 // TO USER: Replace the following config with your own Firebase project settings
 // from the Firebase Console (Project Settings > General > Your Apps)
 const firebaseConfig = {
-    apiKey: "AIzaSyAJeBLykRpWltJ_Y9-Xh1yFObMRfednJOU",
-    authDomain: "news15-404dc.firebaseapp.com",
-    databaseURL: "https://news15-404dc-default-rtdb.firebaseio.com",
-    projectId: "news15-404dc",
-    storageBucket: "news15-404dc.firebasestorage.app",
-    messagingSenderId: "850703589821",
-    appId: "1:850703589821:web:82ff3577f8187e5778b2d4",
-    measurementId: "G-3RP0L0RNDQ"
+    apiKey: "AIzaSyC4YEYD1BvaP2xsNIgxIDckfC4b6zVDBSI",
+    authDomain: "swami-opticals-36003.firebaseapp.com",
+    databaseURL: "https://swami-opticals-36003-default-rtdb.firebaseio.com",
+    projectId: "swami-opticals-36003",
+    storageBucket: "swami-opticals-36003.firebasestorage.app",
+    messagingSenderId: "1059967823769",
+    appId: "1:1059967823769:web:871087059ed9657c92ed08",
+    measurementId: "G-LGX54LBPXX"
 };
 
 // Initialize Firebase
