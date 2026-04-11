@@ -1,6 +1,6 @@
 /* ============================================
    VerifAI — Weather Verification Logic
-   Powered by Open-Meteo & Nominatim
+   Version: 1.1.2 (Auto-load + PointerFix)
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', () => {

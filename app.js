@@ -468,9 +468,10 @@ const initEventListeners = () => {
     }
 
     // 3. Report Generation
-    const createReportBtn = document.getElementById('createReportBtn');
-    if (createReportBtn) {
-        createReportBtn.addEventListener('click', generateAnalyzedReport);
+    const rb = document.getElementById('createReportBtn');
+    if (rb) {
+        console.log('✅ Report button found and bound');
+        rb.addEventListener('click', generateAnalyzedReport);
     }
 };
 
@@ -931,25 +932,27 @@ async function handleVerify(providedClaimId = null) {
         })
         .then(res => res.json())
         .then(() => {
-            console.log('✅ History saved to Firebase');
-            // Refresh sidebar
-            setTimeout(() => fetchUserHistory(currentUser.email), 1000);
+            // Refresh sidebar with a longer delay to ensure persistence
+            setTimeout(() => {
+                if (currentUser) fetchUserHistory(currentUser.email);
+            }, 2500);
         })
         .catch(err => console.error('❌ History Save Failed:', err));
     }
 
-    // 📄 SET DATA FOR REPORT GENERATION
+    // 📄 ALWAYS SET DATA FOR REPORT GENERATION (Even if history save fails)
     lastReportData = {
         claim: claim,
-        claim_id: currentClaimId,
+        claim_id: currentClaimId || `ext-${Date.now()}`,
         verdict: verdict,
         models: {
             llama: llamaResult,
             mistral: mistralResult,
             nemotron: nemotronResult
         },
-        sources: googleResults
+        sources: googleResults || []
     };
+    console.log('📄 lastReportData populated for:', lastReportData.claim);
 }
 
 
@@ -1111,14 +1114,26 @@ async function generateAnalyzedReport() {
         return;
     }
 
-    const { jsPDF } = window.jspdf;
     const btn = document.getElementById('createReportBtn');
+    if (!btn) return;
     const originalText = btn.innerHTML;
 
-    btn.innerHTML = 'Creating Report...';
-    btn.disabled = true;
-
     try {
+        btn.innerHTML = 'Creating Report...';
+        btn.disabled = true;
+
+        // Robust jsPDF initialization
+        let jsPDF;
+        if (window.jspdf && window.jspdf.jsPDF) {
+            jsPDF = window.jspdf.jsPDF;
+        } else if (typeof window.jsPDF === 'function') {
+            jsPDF = window.jsPDF;
+        } else if (window.jspdf) {
+            jsPDF = window.jspdf;
+        }
+        
+        if (!jsPDF) throw new Error('jsPDF library not initialized correctly.');
+
         const doc = new jsPDF('p', 'mm', 'a4');
         const pageWidth = doc.internal.pageSize.getWidth();
         const primaryColor = [0, 212, 255]; // Cyan
@@ -1257,10 +1272,7 @@ window.addEventListener('load', () => {
     checkServerStatus();
     setInterval(checkServerStatus, 5000);
 
-    // Bind report generation specifically
-    if (createReportBtn) {
-        createReportBtn.addEventListener('click', generateAnalyzedReport);
-    }
+    // Report bind is handled in initEventListeners
 });
 
 // Server Health Heartbeat
