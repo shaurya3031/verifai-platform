@@ -7,8 +7,6 @@
 // TO USER: Replace the following config with your own Firebase project settings
 // from the Firebase Console (Project Settings > General > Your Apps)
 const firebaseConfig = {
-const firebaseConfig = {
-const firebaseConfig = {
     apiKey: "AIzaSyC4YEYD1BvaP2xsNIgxIDckfC4b6zVDBSI",
     authDomain: "swami-opticals-36003.firebaseapp.com",
     databaseURL: "https://swami-opticals-36003-default-rtdb.firebaseio.com",
