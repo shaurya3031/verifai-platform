@@ -1,8 +1,5 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "buildCommand": "npm install"
-  },
   "deploy": {
     "startCommand": "node server.js",
     "restartPolicyType": "ON_FAILURE",
